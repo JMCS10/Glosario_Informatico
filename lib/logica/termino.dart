@@ -1,25 +1,25 @@
-class Termino {
-  final int id;
-  final String nombre;
+class Termino{
+  final int idTermino;
+  final String nombreTermino;
   final String definicion;
   final String ejemplo;
-  final String categoria;
+  final String? imagenUrl;
 
   Termino({
-    required this.id,
-    required this.nombre,
+    required this.idTermino,
+    required this.nombreTermino,
     required this.definicion,
     required this.ejemplo,
-    required this.categoria,
+    this.imagenUrl,
   });
 
-  factory Termino.fromJson(Map<String, dynamic> json) {
+  factory Termino.fromJson(Map<String, dynamic> json){
     return Termino(
-      id: json['id'],
-      nombre: json['nombre'],
+      idTermino: json['idTerminos'],
+      nombreTermino: json['nombreTermino'],
       definicion: json['definicion'],
       ejemplo: json['ejemplo'],
-      categoria: json['categoria'],
+      imagenUrl: json['imagenUrl'],
     );
   }
 }
