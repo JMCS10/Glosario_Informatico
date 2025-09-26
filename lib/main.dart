@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';//sssssss
 import 'conexion.dart'; //para importar la conexion
 import 'pantallas/pantalla_inicio.dart'; // Importamos la pantalla de inicio
+import 'logica/termino.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); // 🔹 Necesario para inicializar antes de runApp
