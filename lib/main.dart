@@ -1,7 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';//sssssss
+import 'conexion.dart'; //para importar la conexion
 import 'pantallas/pantalla_inicio.dart'; // Importamos la pantalla de inicio
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // 🔹 Necesario para inicializar antes de runApp
+  await SupabaseConexion.init(); // 🔹 Inicializa Supabase
   runApp(const GlosarioApp());
 }
 
