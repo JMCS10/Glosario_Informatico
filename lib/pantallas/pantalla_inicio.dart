@@ -48,7 +48,6 @@ class PantallaInicio extends StatelessWidget {
     );
   }
 
-  // Botón reutilizable
   Widget botonInicio(
     String texto,
     Color color,

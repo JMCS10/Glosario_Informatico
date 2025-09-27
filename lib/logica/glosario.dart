@@ -10,13 +10,13 @@ class Glosario{
           .from(_tabla)
           .select();
           
-      //print('Términos obtenidos: ${response.length}');
+      //print('Terminos: ${response.length}');
       
       return (response as List)
           .map((json) => Termino.fromJson(json))
           .toList();
     }catch (e){
-      //print('Error: $e');
+      //print('$e');
       return [];
     }
   }

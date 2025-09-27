@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';//sssssss
-import 'conexion.dart'; //para importar la conexion
-import 'pantallas/pantalla_inicio.dart'; // Importamos la pantalla de inicio
+import 'package:flutter/material.dart';
+import 'conexion.dart';
+import 'pantallas/pantalla_inicio.dart';
 import 'logica/termino.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // 🔹 Necesario para inicializar antes de runApp
-  await SupabaseConexion.init(); // 🔹 Inicializa Supabase
+  WidgetsFlutterBinding.ensureInitialized();
+  await SupabaseConexion.init();
   runApp(const GlosarioApp());
 }
 
@@ -17,7 +17,7 @@ class GlosarioApp extends StatelessWidget {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Glosario Informático',
-      home: PantallaInicio(), // Usamos la clase que viene del otro archivo
+      home: PantallaInicio(),
     );
   }
 }
