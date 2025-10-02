@@ -114,7 +114,7 @@ class _PantallaTerminoState extends State<PantallaTermino> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 30), //Cambiar si el espacio entre el título y "Definición" no les convence
 
                       //Sección Definición
                       const Text(
