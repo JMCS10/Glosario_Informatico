@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../logica/glosario.dart';
-//import '../logica/termino.dart';
+import '../logica/termino.dart';
 
 class PantallaPruebas extends StatefulWidget{
   const PantallaPruebas({super.key});
@@ -27,7 +27,7 @@ class _PantallaPruebasState extends State<PantallaPruebas>{
       textoTodos += "- $nombre\n";
     }
 
-    final termino = await Glosario.buscarTermino("API");
+    final Termino? termino = await Glosario.buscarTermino("API");
     String textoBusqueda = "\nBÚSQUEDA: API\n";
     if(termino != null){
       textoBusqueda += "Nombre: ${termino.nombreTermino}\n";
