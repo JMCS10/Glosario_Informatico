@@ -22,13 +22,13 @@ class _PantallaPruebasState extends State<PantallaPruebas>{
     setState(() => resultado = "Cargando...");
 
     final todos = await Glosario.obtenerTodosLosNombres();
-    String textoTodos = "=== TODOS LOS TÉRMINOS ===\n";
-    for (var nombre in todos) {
+    String textoTodos = "BÚSQUEDA DE TODOS LOS TÉRMINOS\n";
+    for(var nombre in todos){
       textoTodos += "- $nombre\n";
     }
 
     final termino = await Glosario.buscarTermino("API");
-    String textoBusqueda = "\n=== BÚSQUEDA: API ===\n";
+    String textoBusqueda = "\nBÚSQUEDA: API\n";
     if(termino != null){
       textoBusqueda += "Nombre: ${termino.nombreTermino}\n";
       textoBusqueda += "Definición: ${termino.definicion}\n";

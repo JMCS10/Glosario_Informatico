@@ -1,4 +1,4 @@
-class Termino{
+class Termino {
   final int idTermino;
   final String nombreTermino;
   final String definicion;
@@ -15,11 +15,11 @@ class Termino{
 
   factory Termino.fromJson(Map<String, dynamic> json){
     return Termino(
-      idTermino: json['idTerminos'],
-      nombreTermino: json['nombreTermino'],
+      idTermino: json['id'],
+      nombreTermino: json['nombretermino'],
       definicion: json['definicion'],
       ejemplo: json['ejemplo'],
-      imagenUrl: json['imagenUrl'],
+      imagenUrl: json['imagen_url'],
     );
   }
 }

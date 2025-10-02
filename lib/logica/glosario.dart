@@ -1,11 +1,11 @@
 import '../conexion.dart';
 import 'termino.dart';
 
-class Glosario {
+class Glosario{
   static const String _tabla = 'terminos';
   
-  static Future<List<String>> obtenerTodosLosNombres() async {
-    try {
+  static Future<List<String>> obtenerTodosLosNombres() async{
+    try{
       final response = await SupabaseConexion.client
           .from(_tabla)
           .select('nombretermino');
@@ -13,23 +13,22 @@ class Glosario {
       return (response as List)
           .map((item) => item['nombretermino'] as String)
           .toList();
-    } catch (e) {
+    }catch (e){
       return [];
     }
   }
-  
-  static Future<Termino?> buscarTermino(String palabra) async {
-    try {
+
+  static Future<Termino?> buscarTermino(String palabra) async{
+    try{
       final response = await SupabaseConexion.client
           .from(_tabla)
           .select()
-          .ilike('nombretermino', '%$palabra%')
-          .limit(1);
+          .ilike('nombretermino', '%$palabra%');
       
-      if (response.isEmpty) return null;
+      if(response.isEmpty) return null;
       
-      return Termino.fromJson(response[0]);
-    } catch (e) {
+      return Termino.fromJson(response.first);
+    }catch (e){
       return null;
     }
   }
