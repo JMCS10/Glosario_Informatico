@@ -32,4 +32,17 @@ class Glosario{
       return null;
     }
   }
+  static Future<List<Termino>> obtenerTerminosPorIds(List<int> ids) async{
+    try{
+      final response = await SupabaseConexion.client
+          .from(_tabla)
+          .select()
+          .inFilter('id', ids);
+      return (response as List)
+          .map((item) => Termino.fromJson(item))
+          .toList();
+    }catch (e){
+      return [];
+    }
+  }
 }
