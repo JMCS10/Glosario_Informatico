@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'conexion.dart';
-import 'pantallas/pantalla_inicio.dart';
-import 'logica/termino.dart';
+//import 'pantallas/pantalla_inicio.dart';
+//import 'logica/termino.dart';
+import 'pantallas/pantalla_pruebas.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +18,7 @@ class GlosarioApp extends StatelessWidget {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Glosario Informático',
-      home: PantallaInicio(),
+      home: PantallaPruebas(),
     );
   }
 }
