@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'conexion.dart';
+import 'baseDeDatos/conexion.dart';
 //import 'pantallas/pantalla_inicio.dart';
 //import 'logica/termino.dart';
 import 'pantallas/pantalla_terminos.dart';

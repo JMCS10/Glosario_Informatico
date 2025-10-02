@@ -1,4 +1,4 @@
-import '../conexion.dart';
+import '../baseDeDatos/conexion.dart';
 import 'termino.dart';
 
 class Glosario{
