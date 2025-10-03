@@ -3,6 +3,7 @@ import 'termino.dart';
 
 class Glosario{
   static const String _tabla = 'terminos';
+  static const String _tablaFavoritos = 'favoritos';
   
   static Future<List<String>> obtenerTodosLosNombres() async{
     try{
@@ -42,6 +43,57 @@ class Glosario{
           .map((item) => Termino.fromJson(item))
           .toList();
     }catch (e){
+      return [];
+    }
+  }
+  static Future<bool> esFavorito(int idTermino, int idDispositivo) async {
+    try {
+      final response = await SupabaseConexion.client
+          .from(_tablaFavoritos)
+          .select('termino_id') 
+          .eq('termino_id', idTermino) 
+          .eq('dispositivo_id', idDispositivo) 
+          .limit(1);
+
+      return response.isNotEmpty;
+    } catch (e) {
+      return false;
+    }
+  }
+  static Future<void> cambiarEstadoFavorito({ 
+    required int idTermino, 
+    required int idDispositivo, 
+    required bool esFavActual,
+  }) async {
+    try {
+      if (esFavActual) {
+        await SupabaseConexion.client
+            .from(_tablaFavoritos)
+            .delete()
+            .eq('termino_id', idTermino)
+            .eq('dispositivo_id', idDispositivo);
+      } else {
+        await SupabaseConexion.client.from(_tablaFavoritos).insert({
+          'termino_id': idTermino,
+          'dispositivo_id': idDispositivo,
+          'creado_en': DateTime.now().toIso8601String(), 
+        });
+      }
+    } catch (e) {
+    }
+  }
+  static Future<List<int>> obtenerIdsDeFavoritos(int idDispositivo) async {
+    try {
+      final response = await SupabaseConexion.client
+          .from(_tablaFavoritos)
+          .select('termino_id') 
+          .eq('dispositivo_id', idDispositivo) 
+          .order('creado_en', ascending: false); 
+
+      return (response as List)
+          .map((item) => item['termino_id'] as int)
+          .toList();
+    } catch (e) {
       return [];
     }
   }
