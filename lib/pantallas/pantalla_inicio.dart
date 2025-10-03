@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'pantalla_busqueda.dart'; // 👈 importa la pantalla 2
 
 class PantallaInicio extends StatelessWidget {
   const PantallaInicio({super.key});
@@ -26,15 +27,30 @@ class PantallaInicio extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 30),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: "Buscar",
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+
+              // 👉 Al tocar este campo se navega a la pantalla de búsqueda
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PantallaBusqueda(),
+                    ),
+                  );
+                },
+                child: AbsorbPointer(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: "Buscar",
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
                 ),
               ),
+
               const SizedBox(height: 40),
               botonInicio("FAVORITOS", Colors.black, context, () {}),
               const SizedBox(height: 20),
