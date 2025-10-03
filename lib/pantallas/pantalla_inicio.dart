@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'pantalla_busqueda.dart'; // 👈 importa la pantalla 2
+import 'pantalla_busqueda.dart'; // 👉 Importa la pantalla 2
+import 'pantalla_sugerir.dart'; // 👉 Importa la pantalla de sugerir
 
 class PantallaInicio extends StatelessWidget {
   const PantallaInicio({super.key});
@@ -52,11 +53,30 @@ class PantallaInicio extends StatelessWidget {
               ),
 
               const SizedBox(height: 40),
-              botonInicio("FAVORITOS", Colors.black, context, () {}),
+
+              // Botón Favoritos
+              botonInicio("FAVORITOS", Colors.black, context, () {
+                // Aquí luego enlazamos con PantallaFavoritos
+              }),
+
               const SizedBox(height: 20),
-              botonInicio("HISTORIAL", Colors.black, context, () {}),
+
+              // Botón Historial
+              botonInicio("HISTORIAL", Colors.black, context, () {
+                // Aquí luego enlazamos con PantallaHistorial
+              }),
+
               const SizedBox(height: 20),
-              botonInicio("SUGERIR PALABRA", Colors.black, context, () {}),
+
+              // Botón Sugerir Palabra
+              botonInicio("SUGERIR PALABRA", Colors.black, context, () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PantallaSugerir(),
+                  ),
+                );
+              }),
             ],
           ),
         ),
