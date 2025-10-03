@@ -16,7 +16,7 @@ class PantallaInicio extends StatelessWidget {
               const SizedBox(height: 40),
               const Center(
                 child: Text(
-                  "GLOSARIO\nINFORMATICO",
+                  "GLOSARIO\nINFORMÁTICO",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'Angkor',
@@ -48,7 +48,6 @@ class PantallaInicio extends StatelessWidget {
     );
   }
 
-  // Botón reutilizable
   Widget botonInicio(
     String texto,
     Color color,
