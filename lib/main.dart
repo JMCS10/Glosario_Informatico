@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
 import 'baseDeDatos/conexion.dart';
-//import 'pantallas/pantalla_inicio.dart';
-//import 'logica/termino.dart';
-import 'pantallas/pantalla_terminos.dart';
+import 'pantallas/pantalla_inicio.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inicializar conexión a Supabase
   await SupabaseConexion.init();
-  runApp(const GlosarioApp());
+  
+  runApp(const MiApp());
 }
 
-class GlosarioApp extends StatelessWidget {
-  const GlosarioApp({super.key});
+class MiApp extends StatelessWidget {
+  const MiApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
+    return MaterialApp(
       title: 'Glosario Informático',
-      home: PantallaTermino(),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        fontFamily: 'Inter',
+      ),
+      home: const PantallaInicio(), 
     );
   }
 }

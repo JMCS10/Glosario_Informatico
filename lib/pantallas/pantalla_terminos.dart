@@ -3,11 +3,13 @@ import '../logica/glosario.dart';
 import '../logica/termino.dart';
 
 class PantallaTermino extends StatefulWidget {
-  final bool esRaiz; //true si es el término inicial, false si viene de otro término
+  final String nombreTermino;
+  final bool esRaiz;
   
   const PantallaTermino({
     super.key,
-    this.esRaiz = true, //Por defecto será raíz
+    required this.nombreTermino,
+    this.esRaiz = true,
   });
 
   @override
@@ -27,30 +29,40 @@ class _PantallaTerminoState extends State<PantallaTermino> {
   }
 
   Future<void> cargarDatos() async {
-    final terminoEncontrado = await Glosario.buscarTermino('API');
-    final relacionados = await Glosario.obtenerTerminosPorIds([5, 6, 7, 8, 9]);
+    final terminoEncontrado = await Glosario.buscarTermino(widget.nombreTermino);
     
-    setState(() {
-      termino = terminoEncontrado;
-      terminosRelacionados = relacionados;
-      cargando = false;
-    });
+    if (terminoEncontrado != null) {
+      // Aquí puedes cargar términos relacionados
+      // Por ahora, cargamos algunos IDs de ejemplo
+      final relacionados = await Glosario.obtenerTerminosPorIds([1, 2, 3, 4, 5]);
+      
+      setState(() {
+        termino = terminoEncontrado;
+        terminosRelacionados = relacionados.take(5).toList();
+        cargando = false;
+      });
+    } else {
+      setState(() {
+        cargando = false;
+      });
+    }
   }
 
   Future<void> toggleFavorito() async {
     if (termino == null) return;
     
+    // TODO: Implementar con el ID del dispositivo real
+    const int idDispositivo = 1; // Placeholder
+    
+    await Glosario.cambiarEstadoFavorito(
+      idTermino: termino!.idTermino,
+      idDispositivo: idDispositivo,
+      esFavActual: esFavorito,
+    );
+    
     setState(() {
       esFavorito = !esFavorito;
     });
-    
-    //Implementar la lógica para guardar/eliminar de la tabla favoritos
-    //Ejemplo:
-    //if(esFavorito){
-    //   código
-    //}else{
-    //  código
-    //}
   }
 
   @override
@@ -63,9 +75,30 @@ class _PantallaTerminoState extends State<PantallaTermino> {
     }
 
     if (termino == null) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: Colors.white,
-        body: Center(child: Text('Término no encontrado')),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, size: 28),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              const Expanded(
+                child: Center(
+                  child: Text('Término no encontrado'),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -74,7 +107,7 @@ class _PantallaTerminoState extends State<PantallaTermino> {
       body: SafeArea(
         child: Column(
           children: [
-            //Header con flecha de regreso y estrella
+            // Header con flecha de regreso y estrella
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
@@ -96,7 +129,7 @@ class _PantallaTerminoState extends State<PantallaTermino> {
               ),
             ),
 
-            //Contenido en la Pantalla
+            // Contenido en la Pantalla
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -104,7 +137,7 @@ class _PantallaTerminoState extends State<PantallaTermino> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      //Título del término
+                      // Título del término
                       Center(
                         child: Text(
                           termino!.nombreTermino,
@@ -114,9 +147,9 @@ class _PantallaTerminoState extends State<PantallaTermino> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 30), //Cambiar si el espacio entre el título y "Definición" no les convence
+                      const SizedBox(height: 30),
 
-                      //Sección Definición
+                      // Sección Definición
                       const Text(
                         'Definición',
                         style: TextStyle(
@@ -134,7 +167,7 @@ class _PantallaTerminoState extends State<PantallaTermino> {
                       ),
                       const SizedBox(height: 32),
 
-                      //Sección Ejemplo
+                      // Sección Ejemplo
                       const Text(
                         'Ejemplo',
                         style: TextStyle(
@@ -152,33 +185,36 @@ class _PantallaTerminoState extends State<PantallaTermino> {
                       ),
                       const SizedBox(height: 32),
 
-                      //Sección Términos relacionados
-                      const Text(
-                        'Términos relacionados',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                      // Sección Términos relacionados
+                      if (terminosRelacionados.isNotEmpty) ...[
+                        const Text(
+                          'Términos relacionados',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 16),
 
-                      //Lista de términos relacionados
-                      ...terminosRelacionados.map((t) => 
-                        _construirTerminoRelacionado(t.nombreTermino)
-                      ),
+                        // Lista de términos relacionados
+                        ...terminosRelacionados.map((t) => 
+                          _construirTerminoRelacionado(t.nombreTermino)
+                        ),
+                      ],
                       
                       const SizedBox(height: 32),
 
+                      // Botón para volver a la raíz
                       if (!widget.esRaiz)
                         Center(
                           child: SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.pop(context); //Volver al término raíz
+                                Navigator.pop(context);
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+                                backgroundColor: Colors.black,
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
@@ -213,7 +249,10 @@ class _PantallaTerminoState extends State<PantallaTermino> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const PantallaTermino(esRaiz: false),
+            builder: (context) => PantallaTermino(
+              nombreTermino: nombre,
+              esRaiz: false,
+            ),
           ),
         );
       },
@@ -221,14 +260,21 @@ class _PantallaTerminoState extends State<PantallaTermino> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 255, 255, 255),
+          color: Colors.grey[100],
           borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[300]!),
         ),
-        child: Text(
-          nombre,
-          style: const TextStyle(
-            fontSize: 16,
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              nombre,
+              style: const TextStyle(
+                fontSize: 16,
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 16),
+          ],
         ),
       ),
     );

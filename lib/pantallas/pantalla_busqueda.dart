@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'pantalla_terminos.dart';
+import '../logica/glosario.dart';
 
 class PantallaBusqueda extends StatefulWidget {
   const PantallaBusqueda({super.key});
@@ -9,29 +11,35 @@ class PantallaBusqueda extends StatefulWidget {
 
 class _PantallaBusquedaState extends State<PantallaBusqueda> {
   final TextEditingController _controller = TextEditingController();
-
-  // 🔹 Datos de prueba (mock)
-  final List<Map<String, String>> terminos = [
-    {"nombretermino": "API"},
-    {"nombretermino": "Array"},
-    {"nombretermino": "Algoritmo"},
-    {"nombretermino": "Aplicación"},
-    {"nombretermino": "Autenticación"},
-    {"nombretermino": "Archivo"},
-  ];
-
-  List<Map<String, String>> filtrados = [];
+  List<String> todosLosTerminos = [];
+  List<String> filtrados = [];
+  bool cargando = true;
 
   @override
   void initState() {
     super.initState();
-    filtrados = terminos; // al inicio muestra todo
+    cargarTerminos();
+  }
+
+  Future<void> cargarTerminos() async {
+    final terminos = await Glosario.obtenerTodosLosNombres();
+    setState(() {
+      todosLosTerminos = terminos;
+      filtrados = terminos;
+      cargando = false;
+    });
   }
 
   void _filtrar(String query) {
-    final resultados = terminos.where((t) {
-      final nombre = t['nombretermino']!.toLowerCase();
-      return nombre.startsWith(query.toLowerCase());
+    if (query.isEmpty) {
+      setState(() {
+        filtrados = todosLosTerminos;
+      });
+      return;
+    }
+
+    final resultados = todosLosTerminos.where((termino) {
+      return termino.toLowerCase().contains(query.toLowerCase());
     }).toList();
 
     setState(() {
@@ -42,7 +50,7 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Fondo blanco
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -61,6 +69,7 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                   Expanded(
                     child: TextField(
                       controller: _controller,
+                      autofocus: true,
                       onChanged: _filtrar,
                       decoration: InputDecoration(
                         hintText: "Buscar",
@@ -87,23 +96,44 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
               ),
             ),
 
-            // Lista de resultados (mock)
+            // Lista de resultados
             Expanded(
-              child: ListView.builder(
-                itemCount: filtrados.length,
-                itemBuilder: (context, index) {
-                  final termino = filtrados[index];
-                  return ListTile(
-                    title: Text(
-                      termino['nombretermino']!,
-                      style: const TextStyle(fontFamily: 'Inter', fontSize: 18),
-                    ),
-                    onTap: () {
-                      // Aquí luego abriremos la Pantalla de Resultado
-                    },
-                  );
-                },
-              ),
+              child: cargando
+                  ? const Center(child: CircularProgressIndicator())
+                  : filtrados.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'No se encontraron resultados',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: filtrados.length,
+                          itemBuilder: (context, index) {
+                            final termino = filtrados[index];
+                            return ListTile(
+                              title: Text(
+                                termino,
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 18,
+                                ),
+                              ),
+                              onTap: () {
+                                // Navegar a la pantalla de término
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PantallaTermino(
+                                      nombreTermino: termino,
+                                      esRaiz: true,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
             ),
           ],
         ),

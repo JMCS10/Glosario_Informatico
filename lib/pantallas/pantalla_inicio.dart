@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'pantalla_busqueda.dart'; // 👉 Importa la pantalla 2
-import 'pantalla_sugerir.dart'; // 👉 Importa la pantalla de sugerir
+import 'pantalla_busqueda.dart';
+import 'pantalla_sugerir.dart';
+
 
 class PantallaInicio extends StatelessWidget {
   const PantallaInicio({super.key});
@@ -18,7 +19,7 @@ class PantallaInicio extends StatelessWidget {
               const SizedBox(height: 40),
               const Center(
                 child: Text(
-                  "GLOSARIO\nINFORMÁTICO",
+                  "GLOSARIO\nINFORMATICO",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'Angkor',
@@ -29,7 +30,7 @@ class PantallaInicio extends StatelessWidget {
               ),
               const SizedBox(height: 30),
 
-              // 👉 Al tocar este campo se navega a la pantalla de búsqueda
+              // Campo de búsqueda
               GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -55,16 +56,18 @@ class PantallaInicio extends StatelessWidget {
               const SizedBox(height: 40),
 
               // Botón Favoritos
-              botonInicio("FAVORITOS", Colors.black, context, () {
+                            botonInicio("FAVORITOS", Colors.black, context, () {
                 // Aquí luego enlazamos con PantallaFavoritos
+              }),
+              const SizedBox(height: 20),
+              // Boton Historial 
+              botonInicio("HISTORIAL", Colors.black, context, () {
+                // Aquí luego enlazamos con PantallaHistorial
               }),
 
               const SizedBox(height: 20),
 
-              // Botón Historial
-              botonInicio("HISTORIAL", Colors.black, context, () {
-                // Aquí luego enlazamos con PantallaHistorial
-              }),
+
 
               const SizedBox(height: 20),
 
