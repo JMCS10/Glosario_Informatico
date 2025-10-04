@@ -27,7 +27,7 @@ class _PantallaTerminoState extends State<PantallaTermino> {
   }
 
   Future<void> cargarDatos() async {
-    final terminoEncontrado = await Glosario.buscarTermino('API');
+    final terminoEncontrado = await Glosario.buscarTermino('API RESTful');
     final relacionados = await Glosario.obtenerTerminosPorIds([5, 6, 7, 8, 9]);
     
     setState(() {
