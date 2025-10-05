@@ -1,9 +1,4 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// Test básico para el Glosario Informático
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,20 +6,35 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_application/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const GlosarioApp());
+  testWidgets('App carga correctamente con pantalla de inicio', (WidgetTester tester) async {
+    // Construir la app y renderizar el primer frame
+    await tester.pumpWidget(const MiApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verificar que el título principal aparece
+    expect(find.text('GLOSARIO\nINFORMÁTICO'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Verificar que el botón de FAVORITOS existe
+    expect(find.text('FAVORITOS'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verificar que el botón de HISTORIAL existe
+    expect(find.text('HISTORIAL'), findsOneWidget);
+
+    // Verificar que el botón de SUGERIR PALABRA existe
+    expect(find.text('SUGERIR PALABRA'), findsOneWidget);
+
+    // Verificar que el campo de búsqueda existe
+    expect(find.byType(TextField), findsOneWidget);
+  });
+
+  testWidgets('Navegación a pantalla de búsqueda funciona', (WidgetTester tester) async {
+    // Construir la app
+    await tester.pumpWidget(const MiApp());
+
+    // Tocar el campo de búsqueda
+    await tester.tap(find.byType(TextField));
+    await tester.pumpAndSettle(); // Esperar a que termine la animación
+
+    // Verificar que aparece el botón de regresar
+    expect(find.byIcon(Icons.arrow_back), findsOneWidget);
   });
 }
