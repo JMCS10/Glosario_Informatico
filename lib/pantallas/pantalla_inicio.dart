@@ -59,15 +59,13 @@ class PantallaInicio extends StatelessWidget {
                             botonInicio("FAVORITOS", Colors.black, context, () {
                 // Aquí luego enlazamos con PantallaFavoritos
               }),
+
               const SizedBox(height: 20),
+
               // Boton Historial 
               botonInicio("HISTORIAL", Colors.black, context, () {
                 // Aquí luego enlazamos con PantallaHistorial
               }),
-
-              const SizedBox(height: 20),
-
-
 
               const SizedBox(height: 20),
 
