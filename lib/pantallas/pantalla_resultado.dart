@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import '../logica/glosario.dart';
 import '../logica/termino.dart';
 
-class PantallaTermino extends StatefulWidget {
+class PantallaResultado extends StatefulWidget {
   final String nombreTermino;
   final bool esRaiz;
   
-  const PantallaTermino({
+  const PantallaResultado({
     super.key,
     required this.nombreTermino,
     this.esRaiz = true,
   });
 
   @override
-  State<PantallaTermino> createState() => _PantallaTerminoState();
+  State<PantallaResultado> createState() => _PantallaResultado();
 }
 
-class _PantallaTerminoState extends State<PantallaTermino> {
+class _PantallaResultado extends State<PantallaResultado> {
   Termino? termino;
   List<Termino> terminosRelacionados = [];
   bool cargando = true;
@@ -51,7 +51,7 @@ class _PantallaTerminoState extends State<PantallaTermino> {
   Future<void> toggleFavorito() async {
     if (termino == null) return;
     
-    // TODO: Implementar con el ID del dispositivo real
+    // Implementar con el ID del dispositivo real
     const int idDispositivo = 1; // Placeholder
     
     await Glosario.cambiarEstadoFavorito(
@@ -249,7 +249,7 @@ class _PantallaTerminoState extends State<PantallaTermino> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PantallaTermino(
+            builder: (context) => PantallaResultado(
               nombreTermino: nombre,
               esRaiz: false,
             ),
@@ -260,21 +260,14 @@ class _PantallaTerminoState extends State<PantallaTermino> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.grey[100],
+          color: const Color.fromARGB(255, 255, 255, 255),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              nombre,
-              style: const TextStyle(
-                fontSize: 16,
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios, size: 16),
-          ],
+        child: Text(
+          nombre,
+          style: const TextStyle(
+            fontSize: 16,
+          ),
         ),
       ),
     );
