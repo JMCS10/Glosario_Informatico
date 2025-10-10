@@ -1,22 +1,38 @@
-import 'package:flutter/material.dart';//sssssss
-import 'conexion.dart'; //para importar la conexion
-import 'pantallas/pantalla_inicio.dart'; // Importamos la pantalla de inicio
+import 'package:flutter/material.dart';
+import 'package:flutter_application/logica/info_dispositivo.dart';
+import 'package:flutter_application/provider/dispositivo_provider.dart';
+import 'package:flutter_application/services/dispositivos_services.dart';
+import 'baseDeDatos/conexion.dart';
+import 'pantallas/pantalla_inicio.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // 🔹 Necesario para inicializar antes de runApp
-  await SupabaseConexion.init(); // 🔹 Inicializa Supabase
-  runApp(const GlosarioApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inicializar conexión a Supabase
+  await SupabaseConexion.init();
+  final DispositivoService servicioDispositivo =
+      DispositivoService(SupabaseConexion.client);
+  final InfoDispositivo dispositivo = await servicioDispositivo.obtenerORegistrar();
+  runApp( MiApp(dispositivo: dispositivo));
 }
 
-class GlosarioApp extends StatelessWidget {
-  const GlosarioApp({super.key});
-
+class MiApp extends StatelessWidget {
+  const MiApp({super.key, required this.dispositivo});
+  final InfoDispositivo dispositivo;
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Glosario Informático',
-      home: PantallaInicio(), // Usamos la clase que viene del otro archivo
+    return ProveedorDispositivo(
+      dispositivo: dispositivo,
+      child: MaterialApp(
+        title: 'Glosario Informático',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          fontFamily: 'Inter',
+        ),
+        home: const PantallaInicio(), 
+      ),
     );
   }
 }
+
