@@ -178,4 +178,17 @@ class Glosario{
           .eq('dispositivo_id', idDispositivo);
     } catch (_) {}
   }
+  /// Elimina un favorito por su idFavorito
+  static Future<bool> eliminarFavoritoPorId(int idFavorito) async {
+    try {
+      final response = await SupabaseConexion.client
+          .from(_tablaFavoritos)
+          .delete()
+          .eq('termino_id', idFavorito);
+      // Si response es una lista y tiene elementos, se eliminó algo
+      return response != null;
+    } catch (e) {
+      return false;
+    }
+  }
 }
