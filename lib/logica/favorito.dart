@@ -1,3 +1,6 @@
+
+
+
 class Favorito {
   final int idFavorito; 
   final int terminoId; 

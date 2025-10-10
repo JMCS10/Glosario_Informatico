@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pantalla_terminos.dart';
+import 'pantalla_resultado.dart';
 import '../logica/glosario.dart';
 
 class PantallaBusqueda extends StatefulWidget {
@@ -124,7 +124,7 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => PantallaTermino(
+                                    builder: (context) => PantallaResultado(
                                       nombreTermino: termino,
                                       esRaiz: true,
                                     ),
