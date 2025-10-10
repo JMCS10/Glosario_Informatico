@@ -1,9 +1,12 @@
 import '../baseDeDatos/conexion.dart';
 import 'termino.dart';
+import 'sugerencia.dart';
 
 class Glosario{
   static const String _tabla = 'terminos';
   static const String _tablaFavoritos = 'favoritos';
+  static const String _tablaHistorial = 'historial'; 
+  static const String _tablaSugerencias = 'sugerencias';
   
   static Future<List<String>> obtenerTodosLosNombres() async{
     try{
@@ -81,9 +84,8 @@ class Glosario{
       }
     } catch (e) {
     }
-  }
-
-static Future<List<Termino>> obtenerFavoritos(int dispositivoId) async {
+ }
+  static Future<List<Termino>> obtenerFavoritos(int dispositivoId) async {
     final List<dynamic> data = await SupabaseConexion.client
         .from('favoritos')
         .select(
@@ -137,6 +139,81 @@ static Future<List<Termino>> obtenerFavoritos(int dispositivoId) async {
       return false;
     }
   }
+  static Future<void> guardarEnHistorial(int idTermino, int idDispositivo) async {
+    try {
+      await SupabaseConexion.client.from(_tablaHistorial).insert({
+        'termino_id': idTermino,
+        'dispositivo_id': idDispositivo,
+        'visto_en': DateTime.now().toIso8601String(),
+      });
+    } catch (_) {}
+  }
+  static Future<List<Termino>> obtenerHistorial(int idDispositivo) async {
+    try {
+      final resp = await SupabaseConexion.client
+          .from(_tablaHistorial)
+          .select('visto_en, terminos(id, nombretermino, definicion, ejemplo, imagen_url)')
+          .eq('dispositivo_id', idDispositivo)
+          .order('visto_en', ascending: false);
 
-  
+      // mapea el embed "terminos"
+      final lista = (resp as List)
+          .map((row) => (row['terminos'] as Map<String, dynamic>))
+          .where((t) => t != null)
+          .map<Termino>((t) => Termino.fromJson(t))
+          .toList();
+
+      return lista;
+    } catch (_) {
+      return [];
+    }
+  }
+  static Future<void> eliminarTodoHistorial(int idDispositivo) async {
+    try {
+      await SupabaseConexion.client
+          .from(_tablaHistorial)
+          .delete()
+          .eq('dispositivo_id', idDispositivo);
+    } catch (_) {}
+  }
+  static Future<void> eliminarDelHistorial(int idHistorial) async {
+    try {
+      await SupabaseConexion.client
+          .from(_tablaHistorial)
+          .delete()
+          .eq('id', idHistorial);
+    } catch (_) {}
+  }
+ static Future<void> guardarSugerencia(String palabra, int idDispositivo) async {
+    try {
+      await SupabaseConexion.client.from(_tablaSugerencias).insert({
+        'termino_sugerido': palabra,
+        'dispositivo_id': idDispositivo,
+        'creado_en': DateTime.now().toIso8601String(),
+      });
+    } catch (_) {}
+  }
+ static Future<List<Sugerencia>> obtenerSugerencias(int idDispositivo) async {
+    try {
+      final resp = await SupabaseConexion.client
+          .from(_tablaSugerencias)
+          .select()
+          .eq('dispositivo_id', idDispositivo)
+          .order('creado_en', ascending: false);
+
+      return (resp as List)
+          .map((item) => Sugerencia.fromJson(item))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+ static Future<void> eliminarTodasSugerencias(int idDispositivo) async {
+    try {
+      await SupabaseConexion.client
+          .from(_tablaSugerencias)
+          .delete()
+          .eq('dispositivo_id', idDispositivo);
+    } catch (_) {}
+  }
 }
