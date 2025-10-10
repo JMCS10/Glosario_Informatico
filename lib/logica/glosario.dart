@@ -122,7 +122,7 @@ static Future<List<Termino>> obtenerFavoritos(int dispositivoId) async {
     } catch (e) {
       return [];
     }
-  }
+  } 
 
   /// Elimina un favorito por su idFavorito
   static Future<bool> eliminarFavoritoPorId(int idFavorito) async {
