@@ -49,14 +49,13 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
     cargarFavoritos();
   }
 
-  void _eliminarFavorito(int index) {
-    final eliminado = _todosLosFavoritos[index];
-    setState(() {
-      _todosLosFavoritos.removeAt(index);
-    });
+//ahora se puede eliminar en tiempo real
+  void _eliminarFavorito(int idFavorito) {
+    Glosario.eliminarFavoritoPorId(idFavorito);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Se eliminó '$eliminado' de favoritos.")),
+      SnackBar(content: Text("Se eliminó de favoritos.")),
     );
+    cargarFavoritos();
   }
 
   void _eliminarTodos() {
@@ -132,7 +131,7 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
                                 Icons.close,
                                 color: Colors.black54,
                               ),
-                              onPressed: () => _eliminarFavorito(index),
+                              onPressed: () => _eliminarFavorito(termino.idTermino),
                             ),
                             onTap: () {
                               Navigator.push(
