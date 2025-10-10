@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'pantalla_busqueda.dart';
 import 'pantalla_sugerir.dart';
+import 'pantalla_favoritos.dart';
+import 'pantalla_historial.dart';
 
 
 class PantallaInicio extends StatelessWidget {
@@ -55,19 +57,27 @@ class PantallaInicio extends StatelessWidget {
 
               const SizedBox(height: 40),
 
-              // Botón Favoritos
-                            botonInicio("FAVORITOS", Colors.black, context, () {
-                // Aquí luego enlazamos con PantallaFavoritos
+             // Botón Favoritos
+              botonInicio("FAVORITOS", Colors.black, context, () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PantallaFavoritos(),
+                  ),
+                );
               }),
+
               const SizedBox(height: 20),
-              // Boton Historial 
+
+              // Botón Historial
               botonInicio("HISTORIAL", Colors.black, context, () {
-                // Aquí luego enlazamos con PantallaHistorial
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PantallaHistorial(),
+                  ),
+                );
               }),
-
-              const SizedBox(height: 20),
-
-
 
               const SizedBox(height: 20),
 
