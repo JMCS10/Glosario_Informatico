@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/logica/glosario.dart';
+import 'package:flutter_application/logica/info_dispositivo.dart';
+import 'package:flutter_application/logica/termino.dart';
+import 'package:flutter_application/pantallas/pantalla_resultado.dart';
+import 'package:flutter_application/provider/dispositivo_provider.dart';
 
 class PantallaFavoritos extends StatefulWidget {
   const PantallaFavoritos({super.key});
@@ -9,26 +14,53 @@ class PantallaFavoritos extends StatefulWidget {
 
 class _PantallaFavoritosState extends State<PantallaFavoritos> {
   // Lista temporal de ejemplo
-  List<String> favoritos = [
+  List<Termino> _todosLosFavoritos = const <Termino> [];
+  bool _cargar = true;
+  bool _cargadoDispositivo = false;
+  late InfoDispositivo _dispositivo;
+  List<String> favoritoss = [
     "Algoritmo",
     "Array",
     "Compilador",
     "Encapsulamiento",
   ];
 
-  void _eliminarFavorito(int index) {
-    final eliminado = favoritos[index];
+   Future<void> cargarFavoritos() async {
     setState(() {
-      favoritos.removeAt(index);
+      _cargar = true;
     });
+    final  List<Termino> favoritos = await Glosario.obtenerFavoritos(_dispositivo.id);
+    if(!mounted){
+      return;
+    }
+    setState(() {
+      _todosLosFavoritos = favoritos;
+      _cargar = false;
+    });
+  }
+
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _dispositivo = ProveedorDispositivo.of(context);
+    print(_dispositivo.codigo);
+    print(_dispositivo.id);
+    cargarFavoritos();
+  }
+
+//ahora se puede eliminar en tiempo real
+  void _eliminarFavorito(int idFavorito) {
+    Glosario.eliminarFavoritoPorId(idFavorito);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Se eliminó '$eliminado' de favoritos.")),
+      SnackBar(content: Text("Se eliminó de favoritos.")),
     );
+    cargarFavoritos();
   }
 
   void _eliminarTodos() {
     setState(() {
-      favoritos.clear();
+      _todosLosFavoritos.clear();
     });
     ScaffoldMessenger.of(
       context,
@@ -70,7 +102,7 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
 
               // 🔹 Lista de términos favoritos
               Expanded(
-                child: favoritos.isEmpty
+                child: _todosLosFavoritos.isEmpty
                     ? const Center(
                         child: Text(
                           "No hay términos en favoritos.",
@@ -78,12 +110,12 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
                         ),
                       )
                     : ListView.builder(
-                        itemCount: favoritos.length,
+                        itemCount: _todosLosFavoritos.length,
                         itemBuilder: (context, index) {
-                          final termino = favoritos[index];
+                          final termino = _todosLosFavoritos[index];
                           return ListTile(
                             title: Text(
-                              termino,
+                              termino.nombreTermino,
                               style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 18,
@@ -99,8 +131,19 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
                                 Icons.close,
                                 color: Colors.black54,
                               ),
-                              onPressed: () => _eliminarFavorito(index),
+                              onPressed: () => _eliminarFavorito(termino.idTermino),
                             ),
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PantallaResultado(
+                                      nombreTermino: termino.nombreTermino,
+                                      esRaiz: true,
+                                    ),
+                                  ),
+                                );
+                            },
                           );
                         },
                       ),
@@ -109,7 +152,7 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
               const SizedBox(height: 10),
 
               // 🔹 Botón para eliminar todos los favoritos
-              if (favoritos.isNotEmpty)
+              if (_todosLosFavoritos.isNotEmpty)
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(

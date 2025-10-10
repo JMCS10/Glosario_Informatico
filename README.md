@@ -63,12 +63,12 @@ git checkout -b feature/id-dispositivo
 ```
 
 ### 🔹 Commits
-Usamos mensajes de commit con el formato **[tipo]: descripción corta**
+Usamos mensajes de commit con el formato **descripción corta**
 
 Ejemplos:
-- `feat: registrar id de dispositivo con Supabase`
-- `fix: corregir error al iniciar sesión`
-- `refactor: reorganizar estructura de servicios`
+- `registrar id de dispositivo con Supabase`
+- ` corregir error al iniciar sesión`
+- ` reorganizar estructura de servicios`
 
 ### 🔹 Pull Requests (PR)
 Cuando termines tu trabajo:
@@ -77,7 +77,7 @@ Cuando termines tu trabajo:
 2. Sube tus últimos cambios:
    ```bash
    git add .
-   git commit -m "feat: descripción corta"
+   git commit -m "descripción corta"
    git push
    ```
 3. Crea un **Pull Request desde tu rama → developer**.

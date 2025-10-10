@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/logica/info_dispositivo.dart';
+import 'package:flutter_application/provider/dispositivo_provider.dart';
 import '../logica/glosario.dart';
 import '../logica/termino.dart';
 
@@ -21,6 +23,7 @@ class _PantallaResultado extends State<PantallaResultado> {
   List<Termino> terminosRelacionados = [];
   bool cargando = true;
   bool esFavorito = false;
+  late InfoDispositivo _dispositivo;
 
   @override
   void initState() {
@@ -48,11 +51,20 @@ class _PantallaResultado extends State<PantallaResultado> {
     }
   }
 
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _dispositivo = ProveedorDispositivo.of(context); //de aqui obtenemos la id del dispositivo
+    print(_dispositivo.codigo);
+    print(_dispositivo.id);
+  }
+
   Future<void> toggleFavorito() async {
     if (termino == null) return;
     
     // Implementar con el ID del dispositivo real
-    const int idDispositivo = 1; // Placeholder
+    int idDispositivo = _dispositivo.id; // Placeholder
     
     await Glosario.cambiarEstadoFavorito(
       idTermino: termino!.idTermino,

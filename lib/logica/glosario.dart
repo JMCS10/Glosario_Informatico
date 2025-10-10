@@ -84,6 +84,32 @@ class Glosario{
     } catch (e) {
     }
   }
+
+static Future<List<Termino>> obtenerFavoritos(int dispositivoId) async {
+    final List<dynamic> data = await SupabaseConexion.client
+        .from('favoritos')
+        .select(
+          'termino_id, creado_en, terminos:termino_id (id, nombretermino, definicion, ejemplo, imagen_url)',
+        )
+        .eq('dispositivo_id', dispositivoId)
+        .order('creado_en', ascending: false);
+
+    return data.whereType<Map<String, dynamic>>().map((
+      Map<String, dynamic> row,
+    ) {
+      final Map<String, dynamic>? terminoJson =
+          row['terminos'] as Map<String, dynamic>?;
+      if (terminoJson == null) {
+        return Termino.fromJson(<String, dynamic>{
+          'id': row['termino_id'],
+          'nombretermino': 'Término desconocido',
+          'definicion': '',
+        });
+      }
+      return Termino.fromJson(terminoJson);
+    }).toList();
+} 
+
   static Future<List<int>> obtenerIdsDeFavoritos(int idDispositivo) async {
     try {
       final response = await SupabaseConexion.client
@@ -97,6 +123,20 @@ class Glosario{
           .toList();
     } catch (e) {
       return [];
+    }
+  } 
+
+  /// Elimina un favorito por su idFavorito
+  static Future<bool> eliminarFavoritoPorId(int idFavorito) async {
+    try {
+      final response = await SupabaseConexion.client
+          .from(_tablaFavoritos)
+          .delete()
+          .eq('termino_id', idFavorito);
+      // Si response es una lista y tiene elementos, se eliminó algo
+      return response != null;
+    } catch (e) {
+      return false;
     }
   }
   static Future<void> guardarEnHistorial(int idTermino, int idDispositivo) async {
