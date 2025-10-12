@@ -28,20 +28,40 @@ class _PantallaResultado extends State<PantallaResultado> {
   @override
   void initState() {
     super.initState();
-    cargarDatos();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _dispositivo = ProveedorDispositivo.of(context);
+    print('Dispositivo código: ${_dispositivo.codigo}');
+    print('Dispositivo ID: ${_dispositivo.id}');
+    
+    if (cargando) {
+      cargarDatos();
+    }
   }
 
   Future<void> cargarDatos() async {
     final terminoEncontrado = await Glosario.buscarTermino(widget.nombreTermino);
     
     if (terminoEncontrado != null) {
-      // Aquí puedes cargar términos relacionados
-      // Por ahora, cargamos algunos IDs de ejemplo
+      await Glosario.registrarEnHistorial(
+        idTermino: terminoEncontrado.idTermino,
+        idDispositivo: _dispositivo.id,
+      );
+
+      final esFav = await Glosario.esFavorito(
+        terminoEncontrado.idTermino,
+        _dispositivo.id,
+      );
+
       final relacionados = await Glosario.obtenerTerminosPorIds([1, 2, 3, 4, 5]);
       
       setState(() {
         termino = terminoEncontrado;
         terminosRelacionados = relacionados.take(5).toList();
+        esFavorito = esFav;
         cargando = false;
       });
     } else {
@@ -51,24 +71,12 @@ class _PantallaResultado extends State<PantallaResultado> {
     }
   }
 
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _dispositivo = ProveedorDispositivo.of(context); //de aqui obtenemos la id del dispositivo
-    print(_dispositivo.codigo);
-    print(_dispositivo.id);
-  }
-
   Future<void> toggleFavorito() async {
     if (termino == null) return;
     
-    // Implementar con el ID del dispositivo real
-    int idDispositivo = _dispositivo.id; // Placeholder
-    
     await Glosario.cambiarEstadoFavorito(
       idTermino: termino!.idTermino,
-      idDispositivo: idDispositivo,
+      idDispositivo: _dispositivo.id,
       esFavActual: esFavorito,
     );
     
@@ -119,7 +127,6 @@ class _PantallaResultado extends State<PantallaResultado> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header con flecha de regreso y estrella
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
@@ -141,7 +148,6 @@ class _PantallaResultado extends State<PantallaResultado> {
               ),
             ),
 
-            // Contenido en la Pantalla
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -149,7 +155,6 @@ class _PantallaResultado extends State<PantallaResultado> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Título del término
                       Center(
                         child: Text(
                           termino!.nombreTermino,
@@ -161,7 +166,6 @@ class _PantallaResultado extends State<PantallaResultado> {
                       ),
                       const SizedBox(height: 30),
 
-                      // Sección Definición
                       const Text(
                         'Definición',
                         style: TextStyle(
@@ -179,7 +183,6 @@ class _PantallaResultado extends State<PantallaResultado> {
                       ),
                       const SizedBox(height: 32),
 
-                      // Sección Ejemplo
                       const Text(
                         'Ejemplo',
                         style: TextStyle(
@@ -197,7 +200,6 @@ class _PantallaResultado extends State<PantallaResultado> {
                       ),
                       const SizedBox(height: 32),
 
-                      // Sección Términos relacionados
                       if (terminosRelacionados.isNotEmpty) ...[
                         const Text(
                           'Términos relacionados',
@@ -208,7 +210,6 @@ class _PantallaResultado extends State<PantallaResultado> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Lista de términos relacionados
                         ...terminosRelacionados.map((t) => 
                           _construirTerminoRelacionado(t.nombreTermino)
                         ),
@@ -216,7 +217,6 @@ class _PantallaResultado extends State<PantallaResultado> {
                       
                       const SizedBox(height: 32),
 
-                      // Botón para volver a la raíz
                       if (!widget.esRaiz)
                         Center(
                           child: SizedBox(
@@ -271,15 +271,17 @@ class _PantallaResultado extends State<PantallaResultado> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 255, 255, 255),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          nombre,
-          style: const TextStyle(
-            fontSize: 16,
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              nombre,
+              style: const TextStyle(
+                fontSize: 16,
+              ),
+            ),
+            
+          ],
         ),
       ),
     );

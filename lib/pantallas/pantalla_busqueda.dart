@@ -96,7 +96,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
               ),
             ),
 
-            // Lista de resultados
             Expanded(
               child: cargando
                   ? const Center(child: CircularProgressIndicator())
@@ -120,7 +119,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                                 ),
                               ),
                               onTap: () {
-                                // Navegar a la pantalla de término
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
