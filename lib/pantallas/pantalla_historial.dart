@@ -62,6 +62,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
     }
   }
 
+  // Elimina todo el historial
   Future<void> _eliminarHistorialCompleto() async {
     final bool eliminado = await Glosario.eliminarHistorialCompleto(_dispositivo.id);
 
@@ -89,6 +90,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Flecha para volver
               IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
                 onPressed: () => Navigator.pop(context),
@@ -96,6 +98,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
 
               const SizedBox(height: 10),
 
+              // Título centrado
               const Center(
                 child: Text(
                   "HISTORIAL",
@@ -110,6 +113,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
 
               const SizedBox(height: 30),
 
+              // Lista de términos del historial
               Expanded(
                 child: _cargar
                     ? const Center(child: CircularProgressIndicator())
@@ -162,6 +166,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
 
               const SizedBox(height: 10),
 
+              // Botón para eliminar todo el historial
               if (_todosLosHistoriales.isNotEmpty)
                 SizedBox(
                   width: double.infinity,

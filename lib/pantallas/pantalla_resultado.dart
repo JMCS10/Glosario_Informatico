@@ -37,6 +37,7 @@ class _PantallaResultado extends State<PantallaResultado> {
     print('Dispositivo código: ${_dispositivo.codigo}');
     print('Dispositivo ID: ${_dispositivo.id}');
     
+    // Cargar datos después de obtener el dispositivo
     if (cargando) {
       cargarDatos();
     }
@@ -46,16 +47,19 @@ class _PantallaResultado extends State<PantallaResultado> {
     final terminoEncontrado = await Glosario.buscarTermino(widget.nombreTermino);
     
     if (terminoEncontrado != null) {
+      // 🔥 REGISTRAR EN HISTORIAL automáticamente
       await Glosario.registrarEnHistorial(
         idTermino: terminoEncontrado.idTermino,
         idDispositivo: _dispositivo.id,
       );
 
+      // Verificar si ya es favorito
       final esFav = await Glosario.esFavorito(
         terminoEncontrado.idTermino,
         _dispositivo.id,
       );
 
+      // Cargar términos relacionados (ejemplo con IDs fijos)
       final relacionados = await Glosario.obtenerTerminosPorIds([1, 2, 3, 4, 5]);
       
       setState(() {
@@ -127,6 +131,7 @@ class _PantallaResultado extends State<PantallaResultado> {
       body: SafeArea(
         child: Column(
           children: [
+            // Header con flecha de regreso y estrella
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
@@ -148,6 +153,7 @@ class _PantallaResultado extends State<PantallaResultado> {
               ),
             ),
 
+            // Contenido en la Pantalla
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -155,6 +161,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Título del término
                       Center(
                         child: Text(
                           termino!.nombreTermino,
@@ -166,6 +173,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                       ),
                       const SizedBox(height: 30),
 
+                      // Sección Definición
                       const Text(
                         'Definición',
                         style: TextStyle(
@@ -183,6 +191,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                       ),
                       const SizedBox(height: 32),
 
+                      // Sección Ejemplo
                       const Text(
                         'Ejemplo',
                         style: TextStyle(
@@ -200,6 +209,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                       ),
                       const SizedBox(height: 32),
 
+                      // Sección Términos relacionados
                       if (terminosRelacionados.isNotEmpty) ...[
                         const Text(
                           'Términos relacionados',
@@ -210,6 +220,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                         ),
                         const SizedBox(height: 16),
 
+                        // Lista de términos relacionados
                         ...terminosRelacionados.map((t) => 
                           _construirTerminoRelacionado(t.nombreTermino)
                         ),
@@ -217,6 +228,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                       
                       const SizedBox(height: 32),
 
+                      // Botón para volver a la raíz
                       if (!widget.esRaiz)
                         Center(
                           child: SizedBox(
@@ -271,6 +283,11 @@ class _PantallaResultado extends State<PantallaResultado> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -280,7 +297,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                 fontSize: 16,
               ),
             ),
-            
+            const Icon(Icons.arrow_forward_ios, size: 16),
           ],
         ),
       ),
