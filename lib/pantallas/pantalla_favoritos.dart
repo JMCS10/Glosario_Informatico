@@ -13,16 +13,17 @@ class PantallaFavoritos extends StatefulWidget {
 }
 
 class _PantallaFavoritosState extends State<PantallaFavoritos> {
-  List<Termino> _todosLosFavoritos = const <Termino>[];
+  List<Termino> _todosLosFavoritos = const <Termino> [];
   bool _cargar = true;
+  bool _cargadoDispositivo = false;
   late InfoDispositivo _dispositivo;
 
-  Future<void> cargarFavoritos() async {
+   Future<void> cargarFavoritos() async {
     setState(() {
       _cargar = true;
     });
-    final List<Termino> favoritos = await Glosario.obtenerFavoritos(_dispositivo.id);
-    if (!mounted) {
+    final  List<Termino> favoritos = await Glosario.obtenerFavoritos(_dispositivo.id);
+    if(!mounted){
       return;
     }
     setState(() {
@@ -31,6 +32,7 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
     });
   }
 
+  
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -43,14 +45,14 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
   void _eliminarFavorito(int idFavorito) {
     Glosario.eliminarFavoritoPorId(idFavorito);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Se eliminó de favoritos.")),
+      SnackBar(content: Text("Se eliminó de favoritos.")),
     );
     cargarFavoritos();
   }
 
   void _eliminarTodos() {
     setState(() {
-      _todosLosFavoritos = [];
+      _todosLosFavoritos.clear();
     });
     ScaffoldMessenger.of(
       context,
@@ -89,52 +91,51 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
               const SizedBox(height: 30),
 
               Expanded(
-                child: _cargar
-                    ? const Center(child: CircularProgressIndicator())
-                    : _todosLosFavoritos.isEmpty
-                        ? const Center(
-                            child: Text(
-                              "No hay términos en favoritos.",
-                              style: TextStyle(fontSize: 16, color: Colors.black54),
+                child: _todosLosFavoritos.isEmpty
+                    ? const Center(
+                        child: Text(
+                          "No hay términos en favoritos.",
+                          style: TextStyle(fontSize: 16, color: Colors.black54),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: _todosLosFavoritos.length,
+                        itemBuilder: (context, index) {
+                          final termino = _todosLosFavoritos[index];
+                          return ListTile(
+                            title: Text(
+                              termino.nombreTermino,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 18,
+                              ),
                             ),
-                          )
-                        : ListView.builder(
-                            itemCount: _todosLosFavoritos.length,
-                            itemBuilder: (context, index) {
-                              final termino = _todosLosFavoritos[index];
-                              return ListTile(
-                                title: Text(
-                                  termino.nombreTermino,
-                                  style: const TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                leading: const Icon(
-                                  Icons.star,
-                                  color: Colors.amber,
-                                  size: 26,
-                                ),
-                                trailing: IconButton(
-                                  icon: const Icon(
-                                    Icons.close,
-                                    color: Colors.black54,
-                                  ),
-                                  onPressed: () => _eliminarFavorito(termino.idTermino),
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PantallaResultado(
-                                        nombreTermino: termino.nombreTermino,
-                                      ),
+                            leading: const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: 26,
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.black54,
+                              ),
+                              onPressed: () => _eliminarFavorito(termino.idTermino),
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PantallaResultado(
+                                      nombreTermino: termino.nombreTermino,
+                                      esRaiz: true,
                                     ),
-                                  );
-                                },
-                              );
+                                  ),
+                                );
                             },
-                          ),
+                          );
+                        },
+                      ),
               ),
 
               const SizedBox(height: 10),

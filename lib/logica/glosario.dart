@@ -2,6 +2,7 @@ import '../baseDeDatos/conexion.dart';
 import 'termino.dart';
 import 'sugerencia.dart';
 
+
 class Glosario{
   static const String _tabla = 'terminos';
   static const String _tablaFavoritos = 'favoritos';
@@ -51,6 +52,8 @@ class Glosario{
     }
   }
 
+  // ========== FAVORITOS ==========
+  
   static Future<bool> esFavorito(int idTermino, int idDispositivo) async {
     try {
       final response = await SupabaseConexion.client
@@ -121,6 +124,23 @@ class Glosario{
     }
   } 
 
+  static Future<List<int>> obtenerIdsDeFavoritos(int idDispositivo) async {
+    try {
+      final response = await SupabaseConexion.client
+          .from(_tablaFavoritos)
+          .select('termino_id') 
+          .eq('dispositivo_id', idDispositivo) 
+          .order('creado_en', ascending: false); 
+
+      return (response as List)
+          .map((item) => item['termino_id'] as int)
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  } 
+
+  /// Elimina un favorito por su idTermino
   static Future<bool> eliminarFavoritoPorId(int idTermino) async {
     try {
       final response = await SupabaseConexion.client
@@ -133,17 +153,23 @@ class Glosario{
     }
   }
 
+  // ========== HISTORIAL ==========
+
+  /// Registra una búsqueda en el historial
+  /// Mantiene solo las últimas 20 búsquedas por dispositivo
   static Future<void> registrarEnHistorial({
     required int idTermino,
     required int idDispositivo,
   }) async {
     try {
+      // 1. Insertar la nueva búsqueda
       await SupabaseConexion.client.from(_tablaHistorial).insert({
         'termino_id': idTermino,
         'dispositivo_id': idDispositivo,
         'visto_en': DateTime.now().toIso8601String(),
       });
 
+      // 2. Obtener todas las búsquedas del dispositivo ordenadas por fecha
       final response = await SupabaseConexion.client
           .from(_tablaHistorial)
           .select('id')
@@ -152,9 +178,10 @@ class Glosario{
 
       final historial = response as List;
 
-      if (historial.length > 100) {
+      // 3. Si hay más de 20, eliminar las más antiguas
+      if (historial.length > 20) {
         final idsAEliminar = historial
-            .skip(100)
+            .skip(20)
             .map((item) => item['id'] as int)
             .toList();
 
@@ -168,6 +195,7 @@ class Glosario{
     }
   }
 
+  /// Obtiene el historial con los datos completos de los términos
   static Future<List<Termino>> obtenerHistorial(int dispositivoId) async {
     try {
       final List<dynamic> data = await SupabaseConexion.client
@@ -177,7 +205,7 @@ class Glosario{
           )
           .eq('dispositivo_id', dispositivoId)
           .order('visto_en', ascending: false)
-          .limit(100);
+          .limit(20);
 
       return data.whereType<Map<String, dynamic>>().map((
         Map<String, dynamic> row,
@@ -200,6 +228,25 @@ class Glosario{
     }
   }
 
+  /// Obtiene los IDs de los términos del historial
+  static Future<List<int>> obtenerIdsDeHistorial(int idDispositivo) async {
+    try {
+      final response = await SupabaseConexion.client
+          .from(_tablaHistorial)
+          .select('termino_id')
+          .eq('dispositivo_id', idDispositivo)
+          .order('visto_en', ascending: false)
+          .limit(20);
+
+      return (response as List)
+          .map((item) => item['termino_id'] as int)
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Elimina todo el historial de un dispositivo
   static Future<bool> eliminarHistorialCompleto(int idDispositivo) async {
     try {
       await SupabaseConexion.client
@@ -213,11 +260,13 @@ class Glosario{
     }
   }
 
+  /// Elimina una búsqueda específica del historial por idTermino
   static Future<bool> eliminarDelHistorialPorTermino({
     required int idTermino,
     required int idDispositivo,
   }) async {
     try {
+      // Buscar el registro más reciente de este término para este dispositivo
       final response = await SupabaseConexion.client
           .from(_tablaHistorial)
           .select('id')
@@ -250,8 +299,7 @@ class Glosario{
       });
     } catch (_) {}
   }
-
-  static Future<List<Sugerencia>> obtenerSugerencias(int idDispositivo) async {
+ static Future<List<Sugerencia>> obtenerSugerencias(int idDispositivo) async {
     try {
       final resp = await SupabaseConexion.client
           .from(_tablaSugerencias)
@@ -266,8 +314,7 @@ class Glosario{
       return [];
     }
   }
-
-  static Future<void> eliminarTodasSugerencias(int idDispositivo) async {
+ static Future<void> eliminarTodasSugerencias(int idDispositivo) async {
     try {
       await SupabaseConexion.client
           .from(_tablaSugerencias)
