@@ -6,14 +6,12 @@ import '../logica/termino.dart';
 
 class PantallaResultado extends StatefulWidget {
   final String nombreTermino;
-  final String? terminoRaiz;
-  final bool volvioDesdePalabraRaiz;
+  final bool esRaiz;
   
   const PantallaResultado({
     super.key,
     required this.nombreTermino,
-    this.terminoRaiz,
-    this.volvioDesdePalabraRaiz = false,
+    this.esRaiz = true,
   });
 
   @override
@@ -36,7 +34,10 @@ class _PantallaResultado extends State<PantallaResultado> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _dispositivo = ProveedorDispositivo.of(context);
+    print('Dispositivo código: ${_dispositivo.codigo}');
+    print('Dispositivo ID: ${_dispositivo.id}');
     
+    // Cargar datos después de obtener el dispositivo
     if (cargando) {
       cargarDatos();
     }
@@ -46,16 +47,19 @@ class _PantallaResultado extends State<PantallaResultado> {
     final terminoEncontrado = await Glosario.buscarTermino(widget.nombreTermino);
     
     if (terminoEncontrado != null) {
+      // 🔥 REGISTRAR EN HISTORIAL automáticamente
       await Glosario.registrarEnHistorial(
         idTermino: terminoEncontrado.idTermino,
         idDispositivo: _dispositivo.id,
       );
 
+      // Verificar si ya es favorito
       final esFav = await Glosario.esFavorito(
         terminoEncontrado.idTermino,
         _dispositivo.id,
       );
 
+      // Cargar términos relacionados (ejemplo con IDs fijos)
       final relacionados = await Glosario.obtenerTerminosPorIds([1, 2, 3, 4, 5]);
       
       setState(() {
@@ -85,32 +89,6 @@ class _PantallaResultado extends State<PantallaResultado> {
     });
   }
 
-  void volverAPalabraRaiz() {
-    final raizActual = widget.terminoRaiz ?? widget.nombreTermino;
-    
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PantallaResultado(
-          nombreTermino: raizActual,
-          terminoRaiz: null,
-          volvioDesdePalabraRaiz: true,
-        ),
-      ),
-    );
-  }
-
-  void manejarRetroceso() {
-    if (widget.volvioDesdePalabraRaiz) {
-      int count = 0;
-      Navigator.popUntil(context, (route) {
-        return count++ == 2;
-      });
-    } else {
-      Navigator.pop(context);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (cargando) {
@@ -128,11 +106,11 @@ class _PantallaResultado extends State<PantallaResultado> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child:                   Row(
+                child: Row(
                   children: [
                     IconButton(
                       icon: const Icon(Icons.arrow_back, size: 28),
-                      onPressed: manejarRetroceso,
+                      onPressed: () => Navigator.pop(context),
                     ),
                   ],
                 ),
@@ -153,6 +131,7 @@ class _PantallaResultado extends State<PantallaResultado> {
       body: SafeArea(
         child: Column(
           children: [
+            // Header con flecha de regreso y estrella
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
@@ -160,7 +139,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back, size: 28),
-                    onPressed: manejarRetroceso,
+                    onPressed: () => Navigator.pop(context),
                   ),
                   IconButton(
                     icon: Icon(
@@ -174,6 +153,7 @@ class _PantallaResultado extends State<PantallaResultado> {
               ),
             ),
 
+            // Contenido en la Pantalla
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -181,6 +161,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Título del término
                       Center(
                         child: Text(
                           termino!.nombreTermino,
@@ -192,6 +173,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                       ),
                       const SizedBox(height: 30),
 
+                      // Sección Definición
                       const Text(
                         'Definición',
                         style: TextStyle(
@@ -209,6 +191,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                       ),
                       const SizedBox(height: 32),
 
+                      // Sección Ejemplo
                       const Text(
                         'Ejemplo',
                         style: TextStyle(
@@ -226,6 +209,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                       ),
                       const SizedBox(height: 32),
 
+                      // Sección Términos relacionados
                       if (terminosRelacionados.isNotEmpty) ...[
                         const Text(
                           'Términos relacionados',
@@ -236,6 +220,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                         ),
                         const SizedBox(height: 16),
 
+                        // Lista de términos relacionados
                         ...terminosRelacionados.map((t) => 
                           _construirTerminoRelacionado(t.nombreTermino)
                         ),
@@ -243,12 +228,15 @@ class _PantallaResultado extends State<PantallaResultado> {
                       
                       const SizedBox(height: 32),
 
-                      if (widget.terminoRaiz != null)
+                      // Botón para volver a la raíz
+                      if (!widget.esRaiz)
                         Center(
                           child: SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: volverAPalabraRaiz,
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.black,
                                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -256,9 +244,9 @@ class _PantallaResultado extends State<PantallaResultado> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              child: Text(
-                                'Volver a "${widget.terminoRaiz}"',
-                                style: const TextStyle(
+                              child: const Text(
+                                'Palabra Raíz',
+                                style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.white,
                                 ),
@@ -280,8 +268,6 @@ class _PantallaResultado extends State<PantallaResultado> {
   }
 
   Widget _construirTerminoRelacionado(String nombre) {
-    final raizActual = widget.terminoRaiz ?? widget.nombreTermino;
-    
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -289,7 +275,7 @@ class _PantallaResultado extends State<PantallaResultado> {
           MaterialPageRoute(
             builder: (context) => PantallaResultado(
               nombreTermino: nombre,
-              terminoRaiz: raizActual,
+              esRaiz: false,
             ),
           ),
         );

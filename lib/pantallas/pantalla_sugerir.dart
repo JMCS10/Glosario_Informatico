@@ -11,6 +11,8 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
   final TextEditingController _controller = TextEditingController();
 
   void _enviarSugerencia() {
+    FocusScope.of(context).unfocus(); // 👈 Cierra el teclado
+
     final sugerencia = _controller.text.trim();
     if (sugerencia.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -30,21 +32,30 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset:
+          true, // 👈 Evita que el teclado cause overflow visual
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
+          // 👈 Permite desplazar si el teclado cubre contenido
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Flechita atrás
+              // 🔹 Flecha atrás
               IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  FocusScope.of(context).unfocus(); // 👈 Cierra el teclado
+                  // Espera un breve instante antes de volver atrás
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    Navigator.pop(context);
+                  });
+                },
               ),
 
               const SizedBox(height: 10),
 
-              // Título (debajo de la flecha)
+              // 🔹 Título principal
               const Center(
                 child: Text(
                   "SUGERIR PALABRA",
@@ -59,7 +70,7 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
 
               const SizedBox(height: 20),
 
-              // Campo de texto
+              // 🔹 Campo de texto
               TextField(
                 controller: _controller,
                 decoration: InputDecoration(
@@ -72,7 +83,7 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
 
               const SizedBox(height: 20),
 
-              // Botón Enviar
+              // 🔹 Botón Enviar
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -97,7 +108,7 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
 
               const SizedBox(height: 20),
 
-              // Nota aclaratoria
+              // 🔹 Nota aclaratoria
               const Center(
                 child: Text(
                   "Nota: Sugiere una palabra que crees que debería aparecer en el glosario.",
@@ -109,6 +120,8 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 40), // Espacio extra inferior
             ],
           ),
         ),
