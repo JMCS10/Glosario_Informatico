@@ -54,7 +54,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
       body: SafeArea(
         child: Column(
           children: [
-            // Barra superior con flecha + buscador
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 8.0,
@@ -124,7 +123,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                                   MaterialPageRoute(
                                     builder: (context) => PantallaResultado(
                                       nombreTermino: termino,
-                                      esRaiz: true,
                                     ),
                                   ),
                                 );
