@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/logica/glosario.dart';
+import 'package:flutter_application/logica/info_dispositivo.dart';
+import 'package:flutter_application/logica/termino.dart';
+import 'package:flutter_application/pantallas/pantalla_resultado.dart';
+import 'package:flutter_application/provider/dispositivo_provider.dart';
 
 class PantallaHistorial extends StatefulWidget {
   const PantallaHistorial({super.key});
@@ -8,33 +13,71 @@ class PantallaHistorial extends StatefulWidget {
 }
 
 class _PantallaHistorialState extends State<PantallaHistorial> {
-  // Lista temporal (luego se conectará con la BD)
-  List<String> historial = [
-    "API",
-    "Array",
-    "Algoritmo",
-    "Base de Datos",
-    "Compilador",
-    "Arquitectura de computadoras",
-  ];
+  List<Termino> _todosLosHistoriales = [];
+  bool _cargar = true;
+  late InfoDispositivo _dispositivo;
 
-  void _eliminarHistorial() {
-    setState(() {
-      historial.clear();
-    });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Historial eliminado.")));
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _dispositivo = ProveedorDispositivo.of(context);
+    print('Dispositivo ID: ${_dispositivo.id}');
+    print('Dispositivo código: ${_dispositivo.codigo}');
+    cargarHistorial();
   }
 
-  void _eliminarElemento(int index) {
-    final eliminado = historial[index];
+  Future<void> cargarHistorial() async {
     setState(() {
-      historial.removeAt(index);
+      _cargar = true;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Se eliminó '$eliminado' del historial.")),
+
+    final List<Termino> historial = await Glosario.obtenerHistorial(_dispositivo.id);
+    
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _todosLosHistoriales = historial;
+      _cargar = false;
+    });
+  }
+
+  // Elimina un término específico del historial
+  Future<void> _eliminarElemento(int idTermino) async {
+    final bool eliminado = await Glosario.eliminarDelHistorialPorTermino(
+      idTermino: idTermino,
+      idDispositivo: _dispositivo.id,
     );
+
+    if (eliminado) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Se eliminó del historial.")),
+      );
+      cargarHistorial(); // Recargar la lista
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error al eliminar.")),
+      );
+    }
+  }
+
+  // Elimina todo el historial
+  Future<void> _eliminarHistorialCompleto() async {
+    final bool eliminado = await Glosario.eliminarHistorialCompleto(_dispositivo.id);
+
+    if (eliminado) {
+      setState(() {
+        _todosLosHistoriales.clear();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Historial eliminado.")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error al eliminar el historial.")),
+      );
+    }
   }
 
   @override
@@ -47,7 +90,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🔹 Flecha para volver
+              // Flecha para volver
               IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
                 onPressed: () => Navigator.pop(context),
@@ -55,7 +98,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
 
               const SizedBox(height: 10),
 
-              // 🔹 Título centrado
+              // Título centrado
               const Center(
                 child: Text(
                   "HISTORIAL",
@@ -70,47 +113,61 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
 
               const SizedBox(height: 30),
 
-              // 🔹 Lista de términos
+              // Lista de términos del historial
               Expanded(
-                child: historial.isEmpty
-                    ? const Center(
-                        child: Text(
-                          "No hay términos en el historial.",
-                          style: TextStyle(fontSize: 16, color: Colors.black54),
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: historial.length,
-                        itemBuilder: (context, index) {
-                          final termino = historial[index];
-                          return ListTile(
-                            title: Text(
-                              termino,
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 18,
-                              ),
+                child: _cargar
+                    ? const Center(child: CircularProgressIndicator())
+                    : _todosLosHistoriales.isEmpty
+                        ? const Center(
+                            child: Text(
+                              "No hay términos en el historial.",
+                              style: TextStyle(fontSize: 16, color: Colors.black54),
                             ),
-                            leading: const Icon(
-                              Icons.history,
-                              color: Colors.black54,
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(
-                                Icons.close,
-                                color: Colors.black54,
-                              ),
-                              onPressed: () => _eliminarElemento(index),
-                            ),
-                          );
-                        },
-                      ),
+                          )
+                        : ListView.builder(
+                            itemCount: _todosLosHistoriales.length,
+                            itemBuilder: (context, index) {
+                              final termino = _todosLosHistoriales[index];
+                              return ListTile(
+                                title: Text(
+                                  termino.nombreTermino,
+                                  style: const TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                leading: const Icon(
+                                  Icons.history,
+                                  color: Colors.black54,
+                                  size: 26,
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(
+                                    Icons.close,
+                                    color: Colors.black54,
+                                  ),
+                                  onPressed: () => _eliminarElemento(termino.idTermino),
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PantallaResultado(
+                                        nombreTermino: termino.nombreTermino,
+                                        esRaiz: true,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
               ),
 
               const SizedBox(height: 10),
 
-              // 🔹 Botón para eliminar todo el historial
-              if (historial.isNotEmpty)
+              // Botón para eliminar todo el historial
+              if (_todosLosHistoriales.isNotEmpty)
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -121,7 +178,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    onPressed: _eliminarHistorial,
+                    onPressed: _eliminarHistorialCompleto,
                     child: const Text(
                       "Eliminar historial",
                       style: TextStyle(

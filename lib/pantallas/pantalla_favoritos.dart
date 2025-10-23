@@ -13,17 +13,10 @@ class PantallaFavoritos extends StatefulWidget {
 }
 
 class _PantallaFavoritosState extends State<PantallaFavoritos> {
-  // Lista temporal de ejemplo
   List<Termino> _todosLosFavoritos = const <Termino> [];
   bool _cargar = true;
   bool _cargadoDispositivo = false;
   late InfoDispositivo _dispositivo;
-  List<String> favoritoss = [
-    "Algoritmo",
-    "Array",
-    "Compilador",
-    "Encapsulamiento",
-  ];
 
    Future<void> cargarFavoritos() async {
     setState(() {
@@ -49,7 +42,6 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
     cargarFavoritos();
   }
 
-//ahora se puede eliminar en tiempo real
   void _eliminarFavorito(int idFavorito) {
     Glosario.eliminarFavoritoPorId(idFavorito);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -77,7 +69,6 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🔹 Flecha para volver
               IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
                 onPressed: () => Navigator.pop(context),
@@ -85,7 +76,6 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
 
               const SizedBox(height: 10),
 
-              // 🔹 Título centrado
               const Center(
                 child: Text(
                   "FAVORITOS",
@@ -100,7 +90,6 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
 
               const SizedBox(height: 30),
 
-              // 🔹 Lista de términos favoritos
               Expanded(
                 child: _todosLosFavoritos.isEmpty
                     ? const Center(
@@ -151,7 +140,6 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
 
               const SizedBox(height: 10),
 
-              // 🔹 Botón para eliminar todos los favoritos
               if (_todosLosFavoritos.isNotEmpty)
                 SizedBox(
                   width: double.infinity,

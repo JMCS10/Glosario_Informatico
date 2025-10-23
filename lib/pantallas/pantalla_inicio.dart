@@ -69,7 +69,7 @@ class PantallaInicio extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // Botón Historial
+              // Botón Historia
               botonInicio("HISTORIAL", Colors.black, context, () {
                 Navigator.push(
                   context,

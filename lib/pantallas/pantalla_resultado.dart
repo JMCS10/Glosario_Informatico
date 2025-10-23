@@ -28,20 +28,44 @@ class _PantallaResultado extends State<PantallaResultado> {
   @override
   void initState() {
     super.initState();
-    cargarDatos();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _dispositivo = ProveedorDispositivo.of(context);
+    print('Dispositivo código: ${_dispositivo.codigo}');
+    print('Dispositivo ID: ${_dispositivo.id}');
+    
+    // Cargar datos después de obtener el dispositivo
+    if (cargando) {
+      cargarDatos();
+    }
   }
 
   Future<void> cargarDatos() async {
     final terminoEncontrado = await Glosario.buscarTermino(widget.nombreTermino);
     
     if (terminoEncontrado != null) {
-      // Aquí puedes cargar términos relacionados
-      // Por ahora, cargamos algunos IDs de ejemplo
+      // 🔥 REGISTRAR EN HISTORIAL automáticamente
+      await Glosario.registrarEnHistorial(
+        idTermino: terminoEncontrado.idTermino,
+        idDispositivo: _dispositivo.id,
+      );
+
+      // Verificar si ya es favorito
+      final esFav = await Glosario.esFavorito(
+        terminoEncontrado.idTermino,
+        _dispositivo.id,
+      );
+
+      // Cargar términos relacionados (ejemplo con IDs fijos)
       final relacionados = await Glosario.obtenerTerminosPorIds([1, 2, 3, 4, 5]);
       
       setState(() {
         termino = terminoEncontrado;
         terminosRelacionados = relacionados.take(5).toList();
+        esFavorito = esFav;
         cargando = false;
       });
     } else {
@@ -51,24 +75,12 @@ class _PantallaResultado extends State<PantallaResultado> {
     }
   }
 
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _dispositivo = ProveedorDispositivo.of(context); //de aqui obtenemos la id del dispositivo
-    print(_dispositivo.codigo);
-    print(_dispositivo.id);
-  }
-
   Future<void> toggleFavorito() async {
     if (termino == null) return;
     
-    // Implementar con el ID del dispositivo real
-    int idDispositivo = _dispositivo.id; // Placeholder
-    
     await Glosario.cambiarEstadoFavorito(
       idTermino: termino!.idTermino,
-      idDispositivo: idDispositivo,
+      idDispositivo: _dispositivo.id,
       esFavActual: esFavorito,
     );
     
@@ -272,14 +284,21 @@ class _PantallaResultado extends State<PantallaResultado> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 255, 255, 255),
+          color: Colors.grey[100],
           borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[300]!),
         ),
-        child: Text(
-          nombre,
-          style: const TextStyle(
-            fontSize: 16,
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              nombre,
+              style: const TextStyle(
+                fontSize: 16,
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 16),
+          ],
         ),
       ),
     );
