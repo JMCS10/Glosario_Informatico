@@ -283,11 +283,6 @@ class _PantallaResultado extends State<PantallaResultado> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
-        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -297,7 +292,6 @@ class _PantallaResultado extends State<PantallaResultado> {
                 fontSize: 16,
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 16),
           ],
         ),
       ),
