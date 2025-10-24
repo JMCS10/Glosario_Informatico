@@ -111,7 +111,7 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
               // 🔹 Nota aclaratoria
               const Center(
                 child: Text(
-                  "Nota: Sugiere una palabra que crees que debería aparecer en el glosario.",
+                  "Sugiere una palabra que desees que aparezca próximamente en el glosario.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
