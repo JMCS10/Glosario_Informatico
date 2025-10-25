@@ -17,6 +17,28 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
   bool _cargar = true;
   late InfoDispositivo _dispositivo;
 
+  int _paginaActual = 1;
+  final int _itemsPorPagina = 20;
+
+  int get _totalPaginas {
+    if (_todosLosHistoriales.isEmpty) return 0;
+    final paginas = (_todosLosHistoriales.length / _itemsPorPagina).ceil();
+    return paginas > 5 ? 5 : paginas;
+  }
+
+  List<Termino> get _terminosPaginaActual {
+    final inicio = (_paginaActual - 1) * _itemsPorPagina;
+    final fin = inicio + _itemsPorPagina;
+    
+    if (inicio >= _todosLosHistoriales.length) return [];
+    
+    final finReal = fin > _todosLosHistoriales.length 
+        ? _todosLosHistoriales.length 
+        : fin;
+    
+    return _todosLosHistoriales.sublist(inicio, finReal);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -27,34 +49,34 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
   }
 
   Future<void> cargarHistorial() async {
-    setState(() {
-      _cargar = true;
-    });
-
-    final List<Termino> historial = await Glosario.obtenerHistorial(_dispositivo.id);
+    setState(() => _cargar = true);
     
-    if (!mounted) {
-      return;
-    }
+    final historial = await Glosario.obtenerHistorial(_dispositivo.id);
+    
+    if (!mounted) return;
 
     setState(() {
       _todosLosHistoriales = historial;
       _cargar = false;
+      
+      if (_paginaActual > _totalPaginas && _totalPaginas > 0) {
+        _paginaActual = _totalPaginas;
+      }
+      if (_paginaActual < 1) _paginaActual = 1;
     });
   }
 
-  // Elimina un término específico del historial
   Future<void> _eliminarElemento(int idTermino) async {
-    final bool eliminado = await Glosario.eliminarDelHistorialPorTermino(
+    final ok = await Glosario.eliminarDelHistorialPorTermino(
       idTermino: idTermino,
       idDispositivo: _dispositivo.id,
     );
-
-    if (eliminado) {
+    
+    if (ok) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Se eliminó del historial.")),
       );
-      cargarHistorial(); // Recargar la lista
+      await cargarHistorial();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error al eliminar.")),
@@ -62,21 +84,48 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
     }
   }
 
-  // Elimina todo el historial
   Future<void> _eliminarHistorialCompleto() async {
-    final bool eliminado = await Glosario.eliminarHistorialCompleto(_dispositivo.id);
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar eliminación'),
+        content: const Text('¿Estás seguro de que quieres eliminar todo el historial?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
 
-    if (eliminado) {
+    if (confirmar == true) {
+      final ok = await Glosario.eliminarHistorialCompleto(_dispositivo.id);
+      
+      if (ok) {
+        setState(() {
+          _todosLosHistoriales.clear();
+          _paginaActual = 1;
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Historial eliminado.")),
+          );
+        }
+      }
+    }
+  }
+
+  void _irAPagina(int numero) {
+    if (numero >= 1 && numero <= _totalPaginas && numero != _paginaActual) {
       setState(() {
-        _todosLosHistoriales.clear();
+        _paginaActual = numero;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Historial eliminado.")),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error al eliminar el historial.")),
-      );
     }
   }
 
@@ -90,15 +139,13 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Flecha para volver
               IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
                 onPressed: () => Navigator.pop(context),
               ),
-
+              
               const SizedBox(height: 10),
-
-              // Título centrado
+              
               const Center(
                 child: Text(
                   "HISTORIAL",
@@ -110,10 +157,9 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
                   ),
                 ),
               ),
-
+              
               const SizedBox(height: 30),
 
-              // Lista de términos del historial
               Expanded(
                 child: _cargar
                     ? const Center(child: CircularProgressIndicator())
@@ -125,21 +171,22 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
                             ),
                           )
                         : ListView.builder(
-                            itemCount: _todosLosHistoriales.length,
+                            itemCount: _terminosPaginaActual.length,
                             itemBuilder: (context, index) {
-                              final termino = _todosLosHistoriales[index];
+                              final termino = _terminosPaginaActual[index];
+                              
                               return ListTile(
+                                leading: const Icon(
+                                  Icons.history,
+                                  color: Colors.black54,
+                                  size: 26,
+                                ),
                                 title: Text(
                                   termino.nombreTermino,
                                   style: const TextStyle(
                                     fontFamily: 'Inter',
                                     fontSize: 18,
                                   ),
-                                ),
-                                leading: const Icon(
-                                  Icons.history,
-                                  color: Colors.black54,
-                                  size: 26,
                                 ),
                                 trailing: IconButton(
                                   icon: const Icon(
@@ -154,7 +201,6 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
                                     MaterialPageRoute(
                                       builder: (context) => PantallaResultado(
                                         nombreTermino: termino.nombreTermino,
-                                        esRaiz: true,
                                       ),
                                     ),
                                   );
@@ -166,7 +212,41 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
 
               const SizedBox(height: 10),
 
-              // Botón para eliminar todo el historial
+              if (_totalPaginas > 1)
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: List.generate(_totalPaginas, (index) {
+                    final numero = index + 1;
+                    final esActual = numero == _paginaActual;
+                    
+                    return GestureDetector(
+                      onTap: () => _irAPagina(numero),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '$numero',
+                          style: TextStyle(
+                            color: esActual ? Colors.black : Colors.grey[600],
+                            fontWeight: esActual ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+
+              const SizedBox(height: 10),
+
               if (_todosLosHistoriales.isNotEmpty)
                 SizedBox(
                   width: double.infinity,

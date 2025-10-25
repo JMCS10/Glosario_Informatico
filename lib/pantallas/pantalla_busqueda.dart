@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'pantalla_resultado.dart';
 import '../logica/glosario.dart';
-
+import 'pantalla_inicio.dart';
 class PantallaBusqueda extends StatefulWidget {
   const PantallaBusqueda({super.key});
 
@@ -47,17 +47,27 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
     });
   }
 
+  //prueba
+  void manejarRetroceso() {
+  // Aquí realizamos la navegación hacia PantallaInicio cuando se presiona el botón de retroceso
+    Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => PantallaInicio(), // Aquí navegas hacia PantallaInicio
+    ),
+  );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: true, // 👈 Evita overflow con teclado
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: 16),
           child: Column(
             children: [
-              // Barra superior con flecha + buscador
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 8.0,
@@ -68,14 +78,11 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                     IconButton(
                       icon: const Icon(Icons.arrow_back),
                       onPressed: () async {
-                        // 👇 Cierra el teclado si está abierto
                         FocusScope.of(context).unfocus();
-
-                        // 👇 Espera que termine la animación del teclado (Android/iOS)
                         await Future.delayed(const Duration(milliseconds: 300));
-
-                        // 👇 Luego vuelve atrás sin franja amarilla
-                        if (mounted) Navigator.pop(context);
+                        if (mounted) {
+                          manejarRetroceso();
+                        }
                       },
                     ),
                     Expanded(
@@ -84,8 +91,7 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                         autofocus: true,
                         onChanged: _filtrar,
                         textInputAction: TextInputAction.search,
-                        onSubmitted: (_) =>
-                            FocusScope.of(context).unfocus(), // cierra teclado
+                        onSubmitted: (_) => FocusScope.of(context).unfocus(),
                         decoration: InputDecoration(
                           hintText: "Buscar",
                           prefixIcon: const Icon(Icons.search),
@@ -111,8 +117,7 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                   ],
                 ),
               ),
-
-              // Contenido / resultados
+              
               if (cargando)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 40),
@@ -132,8 +137,7 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                 ListView.builder(
                   itemCount: filtrados.length,
                   shrinkWrap: true,
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Evita conflicto de scroll
+                  physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
                     final termino = filtrados[index];
                     return ListTile(
@@ -146,14 +150,13 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                       ),
                       onTap: () async {
                         FocusScope.of(context).unfocus();
-                        await Future.delayed(const Duration(milliseconds: 900));
+                        await Future.delayed(const Duration(milliseconds: 300));
                         if (mounted) {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => PantallaResultado(
                                 nombreTermino: termino,
-                                esRaiz: true,
                               ),
                             ),
                           );
