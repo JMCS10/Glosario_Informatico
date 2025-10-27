@@ -200,6 +200,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => PantallaResultado(
+                                        terminoId: termino.idTermino,
                                         nombreTermino: termino.nombreTermino,
                                       ),
                                     ),

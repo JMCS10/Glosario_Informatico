@@ -127,6 +127,7 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => PantallaResultado(
+                                        terminoId: termino.idTermino,
                                         nombreTermino: termino.nombreTermino,
                                       ),
                                     ),
