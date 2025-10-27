@@ -11,8 +11,8 @@ class PantallaBusqueda extends StatefulWidget {
 
 class _PantallaBusquedaState extends State<PantallaBusqueda> {
   final TextEditingController _controller = TextEditingController();
-  List<String> todosLosTerminos = [];
-  List<String> filtrados = [];
+  List<Map<String, dynamic>> todosLosTerminos = [];
+  List<Map<String, dynamic>> filtrados = [];
   bool cargando = true;
 
   @override
@@ -39,7 +39,8 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
     }
 
     final resultados = todosLosTerminos.where((termino) {
-      return termino.toLowerCase().contains(query.toLowerCase());
+      final nombre = termino['nombretermino'] as String;
+      return nombre.toLowerCase().contains(query.toLowerCase());
     }).toList();
 
     setState(() {
@@ -140,9 +141,10 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
                     final termino = filtrados[index];
+                    final nombre = termino['nombretermino'] as String;
                     return ListTile(
                       title: Text(
-                        termino,
+                        nombre,
                         style: const TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 18,
@@ -156,7 +158,8 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => PantallaResultado(
-                                nombreTermino: termino,
+                                terminoId: termino['id'] as int,
+                                nombreTermino: nombre,
                               ),
                             ),
                           );

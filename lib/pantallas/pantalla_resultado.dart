@@ -6,13 +6,17 @@ import '../logica/glosario.dart';
 import '../logica/termino.dart';
 
 class PantallaResultado extends StatefulWidget {
+  final int terminoId;
   final String nombreTermino;
+  final int? terminoRaizId;
   final String? terminoRaiz;
   final bool volvioDesdePalabraRaiz;
-  
+
   const PantallaResultado({
     super.key,
+    required this.terminoId,
     required this.nombreTermino,
+    this.terminoRaizId,
     this.terminoRaiz,
     this.volvioDesdePalabraRaiz = false,
   });
@@ -37,15 +41,17 @@ class _PantallaResultado extends State<PantallaResultado> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _dispositivo = ProveedorDispositivo.of(context);
-    
+
     if (cargando) {
       cargarDatos();
     }
   }
 
   Future<void> cargarDatos() async {
-    final terminoEncontrado = await Glosario.buscarTermino(widget.nombreTermino);
-    
+    final terminoEncontrado = await Glosario.buscarTerminoPorId(
+      widget.terminoId,
+    );
+
     if (terminoEncontrado != null) {
       await Glosario.registrarEnHistorial(
         idTermino: terminoEncontrado.idTermino,
@@ -57,8 +63,14 @@ class _PantallaResultado extends State<PantallaResultado> {
         _dispositivo.id,
       );
 
-      final relacionados = await Glosario.obtenerTerminosPorIds([1, 2, 3, 4, 5]);
-      
+      final relacionados = await Glosario.obtenerTerminosPorIds([
+        1,
+        2,
+        3,
+        4,
+        5,
+      ]);
+
       setState(() {
         termino = terminoEncontrado;
         terminosRelacionados = relacionados.take(5).toList();
@@ -74,26 +86,30 @@ class _PantallaResultado extends State<PantallaResultado> {
 
   Future<void> toggleFavorito() async {
     if (termino == null) return;
-    
+
     await Glosario.cambiarEstadoFavorito(
       idTermino: termino!.idTermino,
       idDispositivo: _dispositivo.id,
       esFavActual: esFavorito,
     );
-    
+
     setState(() {
       esFavorito = !esFavorito;
     });
   }
 
   void volverAPalabraRaiz() {
-    final raizActual = widget.terminoRaiz ?? widget.nombreTermino;
-    
+    final raizNombre =
+        widget.terminoRaiz ?? (termino?.nombreTermino ?? widget.nombreTermino);
+    final raizId = widget.terminoRaizId ?? widget.terminoId;
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => PantallaResultado(
-          nombreTermino: raizActual,
+          terminoId: raizId,
+          nombreTermino: raizNombre,
+          terminoRaizId: null,
           terminoRaiz: null,
           volvioDesdePalabraRaiz: true,
         ),
@@ -101,11 +117,12 @@ class _PantallaResultado extends State<PantallaResultado> {
     );
   }
 
-
   void manejarRetroceso() {
     if (widget.volvioDesdePalabraRaiz) {
-      Navigator.pushReplacement(context, MaterialPageRoute(
-        builder: (context) => PantallaBusqueda(),));  
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => PantallaBusqueda()),
+      );
     } else {
       Navigator.pop(context);
     }
@@ -138,9 +155,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                 ),
               ),
               const Expanded(
-                child: Center(
-                  child: Text('Término no encontrado'),
-                ),
+                child: Center(child: Text('Término no encontrado')),
               ),
             ],
           ),
@@ -202,10 +217,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                       const SizedBox(height: 12),
                       Text(
                         termino!.definicion,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          height: 1.5,
-                        ),
+                        style: const TextStyle(fontSize: 16, height: 1.5),
                       ),
                       const SizedBox(height: 32),
 
@@ -219,10 +231,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                       const SizedBox(height: 12),
                       Text(
                         termino!.ejemplo,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          height: 1.5,
-                        ),
+                        style: const TextStyle(fontSize: 16, height: 1.5),
                       ),
                       const SizedBox(height: 32),
 
@@ -236,11 +245,11 @@ class _PantallaResultado extends State<PantallaResultado> {
                         ),
                         const SizedBox(height: 16),
 
-                        ...terminosRelacionados.map((t) => 
-                          _construirTerminoRelacionado(t.nombreTermino)
-                        ),
+                        ...terminosRelacionados
+                            .map((t) => _construirTerminoRelacionado(t))
+                            .toList(),
                       ],
-                      
+
                       const SizedBox(height: 32),
 
                       if (widget.terminoRaiz != null)
@@ -251,7 +260,9 @@ class _PantallaResultado extends State<PantallaResultado> {
                               onPressed: volverAPalabraRaiz,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -266,7 +277,7 @@ class _PantallaResultado extends State<PantallaResultado> {
                             ),
                           ),
                         ),
-                      
+
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -279,17 +290,21 @@ class _PantallaResultado extends State<PantallaResultado> {
     );
   }
 
-  Widget _construirTerminoRelacionado(String nombre) {
-    final raizActual = widget.terminoRaiz ?? widget.nombreTermino;
-    
+  Widget _construirTerminoRelacionado(Termino relacionado) {
+    final raizNombre =
+        widget.terminoRaiz ?? (termino?.nombreTermino ?? widget.nombreTermino);
+    final raizId = widget.terminoRaizId ?? widget.terminoId;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => PantallaResultado(
-              nombreTermino: nombre,
-              terminoRaiz: raizActual,
+              terminoId: relacionado.idTermino,
+              nombreTermino: relacionado.nombreTermino,
+              terminoRaizId: raizId,
+              terminoRaiz: raizNombre,
             ),
           ),
         );
@@ -301,7 +316,7 @@ class _PantallaResultado extends State<PantallaResultado> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              nombre,
+              relacionado.nombreTermino,
               style: const TextStyle(
                 fontSize: 16,
               ),
