@@ -17,7 +17,6 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
   bool _cargar = true;
   late InfoDispositivo _dispositivo;
 
-  // ---- Paginación ----
   int _paginaActual = 1;
   final int _itemsPorPagina = 10;
 
@@ -38,7 +37,6 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
 
     return _todosLosFavoritos.sublist(inicio, finReal);
   }
-  // ---------------------
 
   Future<void> cargarFavoritos() async {
     setState(() {
@@ -51,7 +49,6 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
       _todosLosFavoritos = favoritos;
       _cargar = false;
 
-      // Ajuste de página en caso de cambios
       if (_totalPaginas == 0) {
         _paginaActual = 1;
       } else if (_paginaActual > _totalPaginas) {
@@ -78,19 +75,6 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
       const SnackBar(content: Text("Se eliminó de favoritos.")),
     );
     await cargarFavoritos();
-  }
-
-  void _eliminarTodos() {
-    setState(() {
-      _todosLosFavoritos = [];
-      _paginaActual = 1; // reset paginación
-    });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Favoritos eliminados.")));
-    // Si tienes un método para eliminar todo en BD, podrías llamarlo y luego recargar.
-    // await Glosario.eliminarFavoritosCompleto(_dispositivo.id);
-    // await cargarFavoritos();
   }
 
   void _irAPagina(int numero) {
@@ -184,7 +168,6 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
 
               const SizedBox(height: 10),
 
-              // ---- Paginado centrado ----
               if (_totalPaginas > 1)
                 Center(
                   child: Wrap(
@@ -219,31 +202,8 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
                     }),
                   ),
                 ),
-
+                
               const SizedBox(height: 10),
-
-              if (_todosLosFavoritos.isNotEmpty)
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed: _eliminarTodos,
-                    child: const Text(
-                      "Eliminar favoritos",
-                      style: TextStyle(
-                        fontFamily: 'Angkor',
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
