@@ -44,7 +44,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+  flutter_native_splash: ^2.4.2
+  flutter_launcher_icons: ^0.13.1
   # Buenas prácticas de código
   flutter_lints: ^5.0.0
 
@@ -71,6 +72,11 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
+
+  assets:
+    - assets/icon.png
+    - assets/splash.png
+
   fonts:
     - family: Angkor
       fonts:
@@ -80,6 +86,7 @@ flutter:
       fonts:
         - asset: assets/fonts/Inter-Regular.ttf
           weight: 400
+    
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
@@ -90,8 +97,20 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
-
-
+flutter_native_splash:
+  android: true
+  ios: false
+  web: false
   
+  fullscreen: true
+  background_image: assets/splash.png
+  android_12:
+    background_image: assets/splash.png
 
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/icon.png
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/icon.png
   
