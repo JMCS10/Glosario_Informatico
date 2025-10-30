@@ -247,17 +247,22 @@ class Glosario {
   }
 
   static Future<void> guardarSugerencia(
-    String palabra,
-    int idDispositivo,
-  ) async {
-    try {
-      await SupabaseConexion.client.from(_tablaSugerencias).insert({
-        'termino_sugerido': palabra,
-        'dispositivo_id': idDispositivo,
-        'creado_en': DateTime.now().toIso8601String(),
-      });
-    } catch (_) {}
+  String palabra,
+  int idDispositivo,
+) async {
+  try {
+    final res = await SupabaseConexion.client.from(_tablaSugerencias).insert({
+      'termino_sugerido': palabra,
+      'dispositivo_id': idDispositivo,
+      'creado_en': DateTime.now().toIso8601String(),
+    });
+
+    print("✅ Respuesta Supabase: $res");
+  } catch (e) {
+    print('❌ Error al guardar sugerencia: $e');
+    rethrow;
   }
+}
 
   static Future<List<Sugerencia>> obtenerSugerencias(int idDispositivo) async {
     try {

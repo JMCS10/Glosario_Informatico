@@ -26,7 +26,7 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
       return;
     }
 
-    final dispositivo = Provider.of<ProveedorDispositivo>(context, listen: false).dispositivo;
+    final dispositivo = ProveedorDispositivo.of(context);
     final idDispositivo = dispositivo.id;
 
     setState(() => _enviando = true);
