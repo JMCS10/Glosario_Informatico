@@ -26,7 +26,10 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
       return;
     }
 
-    final dispositivo = Provider.of<ProveedorDispositivo>(context, listen: false).dispositivo;
+    final dispositivo = Provider.of<ProveedorDispositivo>(
+      context,
+      listen: false,
+    ).dispositivo;
     final idDispositivo = dispositivo.id;
 
     setState(() => _enviando = true);
@@ -46,6 +49,7 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
       setState(() => _enviando = false);
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
