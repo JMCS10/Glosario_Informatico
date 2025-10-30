@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/logica/glosario.dart';
+import 'package:flutter_application/provider/dispositivo_provider.dart';
+import 'package:provider/provider.dart';
 
 class PantallaSugerir extends StatefulWidget {
   const PantallaSugerir({super.key});
@@ -10,10 +13,12 @@ class PantallaSugerir extends StatefulWidget {
 class _PantallaSugerirState extends State<PantallaSugerir> {
   final TextEditingController _controller = TextEditingController();
 
-  void _enviarSugerencia() {
-    FocusScope.of(context).unfocus(); // 👈 Cierra el teclado
+  bool _enviando = false;
 
+  Future<void> _enviarSugerencia() async {
+    FocusScope.of(context).unfocus();
     final sugerencia = _controller.text.trim();
+
     if (sugerencia.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Por favor, escribe una palabra.")),
@@ -21,13 +26,26 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
       return;
     }
 
-    // Aquí más adelante conectaremos con la BD
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("Sugerencia enviada: $sugerencia")));
-    _controller.clear();
-  }
+    final dispositivo = Provider.of<ProveedorDispositivo>(context, listen: false).dispositivo;
+    final idDispositivo = dispositivo.id;
 
+    setState(() => _enviando = true);
+
+    try {
+      await Glosario.guardarSugerencia(sugerencia, idDispositivo);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("✅ Sugerencia enviada correctamente.")),
+      );
+      _controller.clear();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("❌ Error al enviar sugerencia: $e")),
+      );
+    } finally {
+      setState(() => _enviando = false);
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,15 +112,24 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: _enviarSugerencia,
-                  child: const Text(
-                    "Enviar",
-                    style: TextStyle(
-                      fontFamily: 'Angkor',
-                      fontSize: 18,
-                      color: Colors.white,
-                    ),
-                  ),
+                  onPressed: _enviando ? null : _enviarSugerencia,
+                  child: _enviando
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          "Enviar",
+                          style: TextStyle(
+                            fontFamily: 'Angkor',
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
 
