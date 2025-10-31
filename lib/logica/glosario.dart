@@ -286,4 +286,51 @@ class Glosario {
           .eq('dispositivo_id', idDispositivo);
     } catch (_) {}
   }
+  
+  static Future<List<int>> obtenerIdsRelacionados(int terminoId) async {
+    try {
+      final rows = await SupabaseConexion.client
+          .from('terminos_relacionados')
+          .select('relacionado_id')
+          .eq('termino_id', terminoId)
+          .limit(5);
+
+      return (rows as List)
+          .map((r) => (r['relacionado_id'] as num).toInt())
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static Future<List<Termino>> obtenerRelacionadosDe(int terminoId) async {
+    try {
+      final List<dynamic> data = await SupabaseConexion.client
+          .from('terminos_relacionados')
+          .select(
+            'relacionado_id, terminos:relacionado_id (id, nombretermino, definicion, ejemplo, imagen_url)',
+          )
+          .eq('termino_id', terminoId)
+          .limit(5);
+
+      return data.whereType<Map<String, dynamic>>().map((row) {
+        final Map<String, dynamic>? terminoJson =
+            row['terminos'] as Map<String, dynamic>?;
+        if (terminoJson == null) {
+          // Fallback por si no resolviera el join
+          return Termino.fromJson(<String, dynamic>{
+            'id': row['relacionado_id'],
+            'nombretermino': 'Término desconocido',
+            'definicion': '',
+            'ejemplo': '',
+          });
+        }
+        return Termino.fromJson(terminoJson);
+      }).toList();
+    } catch (e) {
+      final ids = await obtenerIdsRelacionados(terminoId);
+      if (ids.isEmpty) return [];
+      return obtenerTerminosPorIds(ids);
+    }
+  }
 }

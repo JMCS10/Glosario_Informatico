@@ -63,17 +63,11 @@ class _PantallaResultado extends State<PantallaResultado> {
         _dispositivo.id,
       );
 
-      final relacionados = await Glosario.obtenerTerminosPorIds([
-        1,
-        2,
-        3,
-        4,
-        5,
-      ]);
+      final relacionados = await Glosario.obtenerRelacionadosDe(widget.terminoId);
 
       setState(() {
         termino = terminoEncontrado;
-        terminosRelacionados = relacionados.take(5).toList();
+        terminosRelacionados = relacionados;
         esFavorito = esFav;
         cargando = false;
       });
@@ -310,8 +304,8 @@ class _PantallaResultado extends State<PantallaResultado> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 13),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
