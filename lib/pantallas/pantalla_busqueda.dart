@@ -59,10 +59,9 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
 
   Future<void> compartirGlosarioCompleto() async {
     try {
-      // Mostrar indicador de carga
       showDialog(
         context: context,
-        barrierDismissible: false,
+        barrierDismissible: true,
         builder: (context) => const AlertDialog(
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -75,7 +74,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
         ),
       );
 
-      // Obtener todos los términos completos
       final terminosCompletos = <Termino>[];
       for (var terminoMap in todosLosTerminos) {
         final termino = await Glosario.buscarTerminoPorId(terminoMap['id']);
@@ -84,15 +82,12 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
         }
       }
 
-      // Ordenar alfabéticamente
       terminosCompletos.sort((a, b) => 
         a.nombreTermino.toLowerCase().compareTo(b.nombreTermino.toLowerCase())
       );
 
-      // Crear el PDF
       final pdf = pw.Document();
 
-      // Página de portada
       pdf.addPage(
         pw.Page(
           pageFormat: PdfPageFormat.a4,
@@ -117,13 +112,13 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                     ),
                   ),
                   pw.SizedBox(height: 40),
-                  pw.Text(
+                  /*pw.Text(
                     '${terminosCompletos.length} términos',
                     style: pw.TextStyle(
                       fontSize: 18,
                       color: PdfColors.grey700,
                     ),
-                  ),
+                  ),*/
                 ],
               ),
             );
@@ -131,9 +126,7 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
         ),
       );
 
-      // Una página por cada término
       for (var termino in terminosCompletos) {
-        // Descargar la imagen si existe
         pw.ImageProvider? imagenPdf;
         if (termino.imagenUrl != null && termino.imagenUrl!.isNotEmpty) {
           try {
@@ -152,7 +145,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    // Header pequeño
                     pw.Text(
                       'Glosario Informático',
                       style: pw.TextStyle(
@@ -165,7 +157,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                     pw.Divider(thickness: 1, color: PdfColors.grey400),
                     pw.SizedBox(height: 25),
 
-                    // Nombre del término
                     pw.Text(
                       termino.nombreTermino,
                       style: pw.TextStyle(
@@ -175,7 +166,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                     ),
                     pw.SizedBox(height: 30),
 
-                    // Definición
                     pw.Text(
                       'Definición',
                       style: pw.TextStyle(
@@ -194,7 +184,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                     ),
                     pw.SizedBox(height: 25),
 
-                    // Ejemplo
                     pw.Text(
                       'Ejemplo',
                       style: pw.TextStyle(
@@ -212,7 +201,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                       textAlign: pw.TextAlign.justify,
                     ),
 
-                    // Imagen si existe
                     if (imagenPdf != null) ...[
                       pw.SizedBox(height: 25),
                       pw.Container(
@@ -234,28 +222,23 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
         );
       }
 
-      // Guardar el PDF
       final output = await getTemporaryDirectory();
       final file = File('${output.path}/Glosario_Informatico_Completo.pdf');
       await file.writeAsBytes(await pdf.save());
 
-      // Cerrar el indicador de carga
       if (mounted) {
         Navigator.pop(context);
       }
 
-      // Compartir el archivo
       await Share.shareXFiles(
         [XFile(file.path)],
         text: 'Glosario Informático Completo - ${terminosCompletos.length} términos',
       );
     } catch (e) {
-      // Cerrar el indicador de carga si hay error
       if (mounted) {
         Navigator.pop(context);
       }
 
-      // Mostrar error
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -284,7 +267,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header con búsqueda y botón de compartir
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 8.0,
@@ -331,7 +313,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                       ),
                     ),
                   ),
-                  // Botón para compartir todo el glosario
                   IconButton(
                     icon: const Icon(Icons.picture_as_pdf),
                     tooltip: 'Compartir glosario completo',
@@ -341,7 +322,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
               ),
             ),
 
-            // Lista de resultados
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.only(bottom: 16),

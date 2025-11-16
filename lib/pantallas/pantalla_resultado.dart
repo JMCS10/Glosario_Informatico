@@ -104,7 +104,6 @@ class _PantallaResultado extends State<PantallaResultado> {
     if (termino == null) return;
 
     try {
-      // Mostrar indicador de carga
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -113,16 +112,13 @@ class _PantallaResultado extends State<PantallaResultado> {
         ),
       );
 
-      // Crear el PDF
       final pdf = pw.Document();
 
-      // Descargar la imagen si existe
       pw.ImageProvider? imagenPdf;
       if (termino!.imagenUrl != null && termino!.imagenUrl!.isNotEmpty) {
         try {
           imagenPdf = await networkImage(termino!.imagenUrl!);
         } catch (e) {
-          // Si falla la carga de la imagen, continuamos sin ella
           print('Error al cargar imagen: $e');
         }
       }
@@ -136,7 +132,6 @@ class _PantallaResultado extends State<PantallaResultado> {
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  // Header pequeño
                   pw.Text(
                     'Glosario Informático',
                     style: pw.TextStyle(
@@ -149,7 +144,6 @@ class _PantallaResultado extends State<PantallaResultado> {
                   pw.Divider(thickness: 1, color: PdfColors.grey400),
                   pw.SizedBox(height: 25),
 
-                  // Nombre del término
                   pw.Text(
                     termino!.nombreTermino,
                     style: pw.TextStyle(
@@ -159,7 +153,6 @@ class _PantallaResultado extends State<PantallaResultado> {
                   ),
                   pw.SizedBox(height: 30),
 
-                  // Definición
                   pw.Text(
                     'Definición',
                     style: pw.TextStyle(
@@ -178,7 +171,6 @@ class _PantallaResultado extends State<PantallaResultado> {
                   ),
                   pw.SizedBox(height: 25),
 
-                  // Ejemplo
                   pw.Text(
                     'Ejemplo',
                     style: pw.TextStyle(
@@ -196,7 +188,6 @@ class _PantallaResultado extends State<PantallaResultado> {
                     textAlign: pw.TextAlign.justify,
                   ),
 
-                  // Imagen si existe
                   if (imagenPdf != null) ...[
                     pw.SizedBox(height: 25),
                     pw.Container(
@@ -217,28 +208,23 @@ class _PantallaResultado extends State<PantallaResultado> {
         ),
       );
 
-      // Guardar el PDF
       final output = await getTemporaryDirectory();
       final file = File('${output.path}/${termino!.nombreTermino}.pdf');
       await file.writeAsBytes(await pdf.save());
 
-      // Cerrar el indicador de carga
       if (mounted) {
         Navigator.pop(context);
       }
 
-      // Compartir el archivo
       await Share.shareXFiles(
         [XFile(file.path)],
         text: 'Definición de: ${termino!.nombreTermino}',
       );
     } catch (e) {
-      // Cerrar el indicador de carga si hay error
       if (mounted) {
         Navigator.pop(context);
       }
 
-      // Mostrar error
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -331,7 +317,6 @@ class _PantallaResultado extends State<PantallaResultado> {
                   ),
                   Row(
                     children: [
-                      // Botón de compartir
                       IconButton(
                         icon: const Icon(Icons.share, size: 28),
                         onPressed: compartirComoPDF,
@@ -396,7 +381,6 @@ class _PantallaResultado extends State<PantallaResultado> {
                       ),
                       const SizedBox(height: 16),
 
-                      // IMAGEN DEL EJEMPLO
                       if (termino!.imagenUrl != null && termino!.imagenUrl!.isNotEmpty)
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
