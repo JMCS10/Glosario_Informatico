@@ -3,6 +3,7 @@ import 'pantalla_resultado.dart';
 import '../logica/glosario.dart';
 import '../logica/termino.dart';
 import 'pantalla_inicio.dart';
+
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
