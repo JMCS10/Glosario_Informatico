@@ -5,6 +5,13 @@ import 'package:flutter_application/provider/dispositivo_provider.dart';
 import '../logica/glosario.dart';
 import '../logica/termino.dart';
 
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
+
 class PantallaResultado extends StatefulWidget {
   final int terminoId;
   final String nombreTermino;
@@ -92,6 +99,157 @@ class _PantallaResultado extends State<PantallaResultado> {
     });
   }
 
+
+  Future<void> compartirComoPDF() async {
+    if (termino == null) return;
+
+    try {
+      // Mostrar indicador de carga
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Crear el PDF
+      final pdf = pw.Document();
+
+      // Descargar la imagen si existe
+      pw.ImageProvider? imagenPdf;
+      if (termino!.imagenUrl != null && termino!.imagenUrl!.isNotEmpty) {
+        try {
+          imagenPdf = await networkImage(termino!.imagenUrl!);
+        } catch (e) {
+          // Si falla la carga de la imagen, continuamos sin ella
+          print('Error al cargar imagen: $e');
+        }
+      }
+
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (pw.Context context) {
+            return pw.Padding(
+              padding: const pw.EdgeInsets.all(40),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  // Header pequeño
+                  pw.Text(
+                    'Glosario Informático',
+                    style: pw.TextStyle(
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.grey700,
+                    ),
+                  ),
+                  pw.SizedBox(height: 5),
+                  pw.Divider(thickness: 1, color: PdfColors.grey400),
+                  pw.SizedBox(height: 25),
+
+                  // Nombre del término
+                  pw.Text(
+                    termino!.nombreTermino,
+                    style: pw.TextStyle(
+                      fontSize: 32,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                  pw.SizedBox(height: 30),
+
+                  // Definición
+                  pw.Text(
+                    'Definición',
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                  pw.SizedBox(height: 10),
+                  pw.Text(
+                    termino!.definicion,
+                    style: const pw.TextStyle(
+                      fontSize: 12,
+                      lineSpacing: 1.5,
+                    ),
+                    textAlign: pw.TextAlign.justify,
+                  ),
+                  pw.SizedBox(height: 25),
+
+                  // Ejemplo
+                  pw.Text(
+                    'Ejemplo',
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                  pw.SizedBox(height: 10),
+                  pw.Text(
+                    termino!.ejemplo,
+                    style: const pw.TextStyle(
+                      fontSize: 12,
+                      lineSpacing: 1.5,
+                    ),
+                    textAlign: pw.TextAlign.justify,
+                  ),
+
+                  // Imagen si existe
+                  if (imagenPdf != null) ...[
+                    pw.SizedBox(height: 25),
+                    pw.Container(
+                      width: double.infinity,
+                      constraints: const pw.BoxConstraints(
+                        maxHeight: 300,
+                      ),
+                      child: pw.Image(
+                        imagenPdf,
+                        fit: pw.BoxFit.contain,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
+        ),
+      );
+
+      // Guardar el PDF
+      final output = await getTemporaryDirectory();
+      final file = File('${output.path}/${termino!.nombreTermino}.pdf');
+      await file.writeAsBytes(await pdf.save());
+
+      // Cerrar el indicador de carga
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      // Compartir el archivo
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'Definición de: ${termino!.nombreTermino}',
+      );
+    } catch (e) {
+      // Cerrar el indicador de carga si hay error
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      // Mostrar error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al compartir: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   void volverAPalabraRaiz() {
     final raizNombre =
         widget.terminoRaiz ?? (termino?.nombreTermino ?? widget.nombreTermino);
@@ -171,13 +329,22 @@ class _PantallaResultado extends State<PantallaResultado> {
                     icon: const Icon(Icons.arrow_back, size: 28),
                     onPressed: manejarRetroceso,
                   ),
-                  IconButton(
-                    icon: Icon(
-                      esFavorito ? Icons.star : Icons.star_border,
-                      size: 28,
-                      color: esFavorito ? Colors.amber : Colors.black,
-                    ),
-                    onPressed: toggleFavorito,
+                  Row(
+                    children: [
+                      // Botón de compartir
+                      IconButton(
+                        icon: const Icon(Icons.share, size: 28),
+                        onPressed: compartirComoPDF,
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          esFavorito ? Icons.star : Icons.star_border,
+                          size: 28,
+                          color: esFavorito ? Colors.amber : Colors.black,
+                        ),
+                        onPressed: toggleFavorito,
+                      ),
+                    ],
                   ),
                 ],
               ),

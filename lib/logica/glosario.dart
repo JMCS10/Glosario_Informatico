@@ -9,24 +9,25 @@ class Glosario {
   static const String _tablaSugerencias = 'sugerencias';
 
   static Future<List<Map<String, dynamic>>> obtenerTodosLosNombres() async {
-    try {
-      final response = await SupabaseConexion.client
-          .from(_tabla)
-          .select('id, nombretermino')
-          .order('nombretermino',ascending: true);
+  try {
+    final response = await SupabaseConexion.client
+        .from(_tabla)
+        .select('id, nombretermino, imagen_url')
+        .order('nombretermino', ascending: true);
 
-      return (response as List)
-          .map(
-            (item) => {
-              'id': item['id'] as int,
-              'nombretermino': item['nombretermino'] as String,
-            },
-          )
-          .toList();
-    } catch (e) {
-      return [];
-    }
+    return (response as List)
+        .map(
+          (item) => {
+            'id': item['id'] as int,
+            'nombretermino': item['nombretermino'] as String,
+            'imagen_url': item['imagen_url'] as String?,
+          },
+        )
+        .toList();
+  } catch (e) {
+    return [];
   }
+}
 
   static Future<Termino?> buscarTerminoPorId(int id) async {
     try {
