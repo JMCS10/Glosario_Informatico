@@ -227,6 +227,59 @@ class _PantallaResultado extends State<PantallaResultado> {
                         termino!.ejemplo,
                         style: const TextStyle(fontSize: 16, height: 1.5),
                       ),
+                      const SizedBox(height: 16),
+
+                      // IMAGEN DEL EJEMPLO
+                      if (termino!.imagenUrl != null && termino!.imagenUrl!.isNotEmpty)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            termino!.imagenUrl!,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'No se pudo cargar la imagen',
+                                        style: TextStyle(color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      
                       const SizedBox(height: 32),
 
                       if (terminosRelacionados.isNotEmpty) ...[
