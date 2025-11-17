@@ -17,17 +17,45 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
   bool _cargar = true;
   late InfoDispositivo _dispositivo;
 
+  int _paginaActual = 1;
+  final int _itemsPorPagina = 10;
+
+  int get _totalPaginas {
+    if (_todosLosFavoritos.isEmpty) return 0;
+    return (_todosLosFavoritos.length / _itemsPorPagina).ceil();
+  }
+
+  List<Termino> get _favoritosPaginaActual {
+    final inicio = (_paginaActual - 1) * _itemsPorPagina;
+    final fin = inicio + _itemsPorPagina;
+
+    if (inicio >= _todosLosFavoritos.length) return [];
+
+    final finReal = fin > _todosLosFavoritos.length
+        ? _todosLosFavoritos.length
+        : fin;
+
+    return _todosLosFavoritos.sublist(inicio, finReal);
+  }
+
   Future<void> cargarFavoritos() async {
     setState(() {
       _cargar = true;
     });
-    final List<Termino> favoritos = await Glosario.obtenerFavoritos(_dispositivo.id);
-    if (!mounted) {
-      return;
-    }
+    final List<Termino> favoritos =
+        await Glosario.obtenerFavoritos(_dispositivo.id);
+    if (!mounted) return;
     setState(() {
       _todosLosFavoritos = favoritos;
       _cargar = false;
+
+      if (_totalPaginas == 0) {
+        _paginaActual = 1;
+      } else if (_paginaActual > _totalPaginas) {
+        _paginaActual = _totalPaginas;
+      } else if (_paginaActual < 1) {
+        _paginaActual = 1;
+      }
     });
   }
 
@@ -40,21 +68,19 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
     cargarFavoritos();
   }
 
-  void _eliminarFavorito(int idFavorito) {
-    Glosario.eliminarFavoritoPorId(idFavorito);
+  Future<void> _eliminarFavorito(int idFavorito) async {
+    await Glosario.eliminarFavoritoPorId(idFavorito);
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Se eliminó de favoritos.")),
     );
-    cargarFavoritos();
+    await cargarFavoritos();
   }
 
-  void _eliminarTodos() {
-    setState(() {
-      _todosLosFavoritos = [];
-    });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Favoritos eliminados.")));
+  void _irAPagina(int numero) {
+    if (numero >= 1 && numero <= _totalPaginas && numero != _paginaActual) {
+      setState(() => _paginaActual = numero);
+    }
   }
 
   @override
@@ -95,13 +121,14 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
                         ? const Center(
                             child: Text(
                               "No hay términos en favoritos.",
-                              style: TextStyle(fontSize: 16, color: Colors.black54),
+                              style: TextStyle(
+                                  fontSize: 16, color: Colors.black54),
                             ),
                           )
                         : ListView.builder(
-                            itemCount: _todosLosFavoritos.length,
+                            itemCount: _favoritosPaginaActual.length,
                             itemBuilder: (context, index) {
-                              final termino = _todosLosFavoritos[index];
+                              final termino = _favoritosPaginaActual[index];
                               return ListTile(
                                 title: Text(
                                   termino.nombreTermino,
@@ -120,13 +147,15 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
                                     Icons.close,
                                     color: Colors.black54,
                                   ),
-                                  onPressed: () => _eliminarFavorito(termino.idTermino),
+                                  onPressed: () =>
+                                      _eliminarFavorito(termino.idTermino),
                                 ),
                                 onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => PantallaResultado(
+                                        terminoId: termino.idTermino,
                                         nombreTermino: termino.nombreTermino,
                                       ),
                                     ),
@@ -139,28 +168,42 @@ class _PantallaFavoritosState extends State<PantallaFavoritos> {
 
               const SizedBox(height: 10),
 
-              if (_todosLosFavoritos.isNotEmpty)
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed: _eliminarTodos,
-                    child: const Text(
-                      "Eliminar favoritos",
-                      style: TextStyle(
-                        fontFamily: 'Angkor',
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
+              if (_totalPaginas > 1)
+                Center(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: List.generate(_totalPaginas, (index) {
+                      final numero = index + 1;
+                      final esActual = numero == _paginaActual;
+                      return GestureDetector(
+                        onTap: () => _irAPagina(numero),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color:
+                                esActual ? Colors.black : Colors.transparent,
+                            border: Border.all(color: Colors.black12),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '$numero',
+                            style: TextStyle(
+                              color:
+                                  esActual ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
                   ),
                 ),
+
+              const SizedBox(height: 10),
             ],
           ),
         ),

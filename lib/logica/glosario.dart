@@ -2,51 +2,57 @@ import '../baseDeDatos/conexion.dart';
 import 'termino.dart';
 import 'sugerencia.dart';
 
-class Glosario{
+class Glosario {
   static const String _tabla = 'terminos';
   static const String _tablaFavoritos = 'favoritos';
   static const String _tablaHistorial = 'historial';
   static const String _tablaSugerencias = 'sugerencias';
-  
-  static Future<List<String>> obtenerTodosLosNombres() async{
-    try{
-      final response = await SupabaseConexion.client
-          .from(_tabla)
-          .select('nombretermino');
-      
-      return (response as List)
-          .map((item) => item['nombretermino'] as String)
-          .toList();
-    }catch (e){
-      return [];
-    }
-  }
 
-  static Future<Termino?> buscarTermino(String palabra) async{
-    try{
+  static Future<List<Map<String, dynamic>>> obtenerTodosLosNombres() async {
+  try {
+    final response = await SupabaseConexion.client
+        .from(_tabla)
+        .select('id, nombretermino, imagen_url')
+        .order('nombretermino', ascending: true);
+
+    return (response as List)
+        .map(
+          (item) => {
+            'id': item['id'] as int,
+            'nombretermino': item['nombretermino'] as String,
+            'imagen_url': item['imagen_url'] as String?,
+          },
+        )
+        .toList();
+  } catch (e) {
+    return [];
+  }
+}
+
+  static Future<Termino?> buscarTerminoPorId(int id) async {
+    try {
       final response = await SupabaseConexion.client
           .from(_tabla)
           .select()
-          .ilike('nombretermino', '%$palabra%');
-      
-      if(response.isEmpty) return null;
-      
+          .eq('id', id)
+          .limit(1);
+
+      if (response.isEmpty) return null;
+
       return Termino.fromJson(response.first);
-    }catch (e){
+    } catch (e) {
       return null;
     }
   }
 
-  static Future<List<Termino>> obtenerTerminosPorIds(List<int> ids) async{
-    try{
+  static Future<List<Termino>> obtenerTerminosPorIds(List<int> ids) async {
+    try {
       final response = await SupabaseConexion.client
           .from(_tabla)
           .select()
           .inFilter('id', ids);
-      return (response as List)
-          .map((item) => Termino.fromJson(item))
-          .toList();
-    }catch (e){
+      return (response as List).map((item) => Termino.fromJson(item)).toList();
+    } catch (e) {
       return [];
     }
   }
@@ -55,9 +61,9 @@ class Glosario{
     try {
       final response = await SupabaseConexion.client
           .from(_tablaFavoritos)
-          .select('termino_id') 
-          .eq('termino_id', idTermino) 
-          .eq('dispositivo_id', idDispositivo) 
+          .select('termino_id')
+          .eq('termino_id', idTermino)
+          .eq('dispositivo_id', idDispositivo)
           .limit(1);
 
       return response.isNotEmpty;
@@ -66,9 +72,9 @@ class Glosario{
     }
   }
 
-  static Future<void> cambiarEstadoFavorito({ 
-    required int idTermino, 
-    required int idDispositivo, 
+  static Future<void> cambiarEstadoFavorito({
+    required int idTermino,
+    required int idDispositivo,
     required bool esFavActual,
   }) async {
     try {
@@ -82,7 +88,7 @@ class Glosario{
         await SupabaseConexion.client.from(_tablaFavoritos).insert({
           'termino_id': idTermino,
           'dispositivo_id': idDispositivo,
-          'creado_en': DateTime.now().toIso8601String(), 
+          'creado_en': DateTime.now().toIso8601String(),
         });
       }
     } catch (e) {
@@ -119,7 +125,7 @@ class Glosario{
       print('Error al obtener favoritos: $e');
       return [];
     }
-  } 
+  }
 
   static Future<bool> eliminarFavoritoPorId(int idTermino) async {
     try {
@@ -241,15 +247,23 @@ class Glosario{
     }
   }
 
-  static Future<void> guardarSugerencia(String palabra, int idDispositivo) async {
-    try {
-      await SupabaseConexion.client.from(_tablaSugerencias).insert({
-        'termino_sugerido': palabra,
-        'dispositivo_id': idDispositivo,
-        'creado_en': DateTime.now().toIso8601String(),
-      });
-    } catch (_) {}
+  static Future<void> guardarSugerencia(
+  String palabra,
+  int idDispositivo,
+) async {
+  try {
+    final res = await SupabaseConexion.client.from(_tablaSugerencias).insert({
+      'termino_sugerido': palabra,
+      'dispositivo_id': idDispositivo,
+      'creado_en': DateTime.now().toIso8601String(),
+    });
+
+    print("✅ Respuesta Supabase: $res");
+  } catch (e) {
+    print('❌ Error al guardar sugerencia: $e');
+    rethrow;
   }
+}
 
   static Future<List<Sugerencia>> obtenerSugerencias(int idDispositivo) async {
     try {
@@ -259,9 +273,7 @@ class Glosario{
           .eq('dispositivo_id', idDispositivo)
           .order('creado_en', ascending: false);
 
-      return (resp as List)
-          .map((item) => Sugerencia.fromJson(item))
-          .toList();
+      return (resp as List).map((item) => Sugerencia.fromJson(item)).toList();
     } catch (_) {
       return [];
     }
@@ -274,5 +286,52 @@ class Glosario{
           .delete()
           .eq('dispositivo_id', idDispositivo);
     } catch (_) {}
+  }
+  
+  static Future<List<int>> obtenerIdsRelacionados(int terminoId) async {
+    try {
+      final rows = await SupabaseConexion.client
+          .from('terminos_relacionados')
+          .select('relacionado_id')
+          .eq('termino_id', terminoId)
+          .limit(5);
+
+      return (rows as List)
+          .map((r) => (r['relacionado_id'] as num).toInt())
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static Future<List<Termino>> obtenerRelacionadosDe(int terminoId) async {
+    try {
+      final List<dynamic> data = await SupabaseConexion.client
+          .from('terminos_relacionados')
+          .select(
+            'relacionado_id, terminos:relacionado_id (id, nombretermino, definicion, ejemplo, imagen_url)',
+          )
+          .eq('termino_id', terminoId)
+          .limit(5);
+
+      return data.whereType<Map<String, dynamic>>().map((row) {
+        final Map<String, dynamic>? terminoJson =
+            row['terminos'] as Map<String, dynamic>?;
+        if (terminoJson == null) {
+          // Fallback por si no resolviera el join
+          return Termino.fromJson(<String, dynamic>{
+            'id': row['relacionado_id'],
+            'nombretermino': 'Término desconocido',
+            'definicion': '',
+            'ejemplo': '',
+          });
+        }
+        return Termino.fromJson(terminoJson);
+      }).toList();
+    } catch (e) {
+      final ids = await obtenerIdsRelacionados(terminoId);
+      if (ids.isEmpty) return [];
+      return obtenerTerminosPorIds(ids);
+    }
   }
 }

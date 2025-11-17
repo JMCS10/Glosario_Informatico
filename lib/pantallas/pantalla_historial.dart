@@ -18,7 +18,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
   late InfoDispositivo _dispositivo;
 
   int _paginaActual = 1;
-  final int _itemsPorPagina = 20;
+  final int _itemsPorPagina = 10;
 
   int get _totalPaginas {
     if (_todosLosHistoriales.isEmpty) return 0;
@@ -200,6 +200,7 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => PantallaResultado(
+                                        terminoId: termino.idTermino,
                                         nombreTermino: termino.nombreTermino,
                                       ),
                                     ),
@@ -213,37 +214,37 @@ class _PantallaHistorialState extends State<PantallaHistorial> {
               const SizedBox(height: 10),
 
               if (_totalPaginas > 1)
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: List.generate(_totalPaginas, (index) {
-                    final numero = index + 1;
-                    final esActual = numero == _paginaActual;
-                    
-                    return GestureDetector(
-                      onTap: () => _irAPagina(numero),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          '$numero',
-                          style: TextStyle(
-                            color: esActual ? Colors.black : Colors.grey[600],
-                            fontWeight: esActual ? FontWeight.bold : FontWeight.normal,
-                            fontSize: 16,
+                Center(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: List.generate(_totalPaginas, (index) {
+                      final numero = index + 1;
+                      final esActual = numero == _paginaActual;
+                      return GestureDetector(
+                        onTap: () => _irAPagina(numero),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: esActual ? Colors.black : Colors.transparent,
+                            border: Border.all(color: Colors.black12),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '$numero',
+                            style: TextStyle(
+                              color: esActual ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ),
+
 
               const SizedBox(height: 10),
 
