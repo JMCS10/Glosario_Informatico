@@ -87,8 +87,8 @@ flutter:
   # example:
 
   assets:
-    - assets/icon.png
-    - assets/splash.png
+    - assets/icon2.png
+    - assets/transicion2.png
 
   fonts:
     - family: Angkor
@@ -116,14 +116,14 @@ flutter_native_splash:
   web: false
   
   fullscreen: true
-  background_image: assets/splash.png
+  background_image: assets/transicion2.png
   android_12:
-    background_image: assets/splash.png
+    background_image: assets/transicion2.png
 
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: assets/icon.png
+  image_path: assets/icon2.png
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: assets/icon.png
+  adaptive_icon_foreground: assets/icon2.png
   

@@ -82,8 +82,10 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
         }
       }
 
-      terminosCompletos.sort((a, b) => 
-        a.nombreTermino.toLowerCase().compareTo(b.nombreTermino.toLowerCase())
+      terminosCompletos.sort(
+        (a, b) => a.nombreTermino.toLowerCase().compareTo(
+          b.nombreTermino.toLowerCase(),
+        ),
       );
 
       final pdf = pw.Document();
@@ -112,13 +114,6 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                     ),
                   ),
                   pw.SizedBox(height: 40),
-                  /*pw.Text(
-                    '${terminosCompletos.length} términos',
-                    style: pw.TextStyle(
-                      fontSize: 18,
-                      color: PdfColors.grey700,
-                    ),
-                  ),*/
                 ],
               ),
             );
@@ -176,10 +171,7 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                     pw.SizedBox(height: 10),
                     pw.Text(
                       termino.definicion,
-                      style: const pw.TextStyle(
-                        fontSize: 12,
-                        lineSpacing: 1.5,
-                      ),
+                      style: const pw.TextStyle(fontSize: 12, lineSpacing: 1.5),
                       textAlign: pw.TextAlign.justify,
                     ),
                     pw.SizedBox(height: 25),
@@ -194,10 +186,7 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                     pw.SizedBox(height: 10),
                     pw.Text(
                       termino.ejemplo,
-                      style: const pw.TextStyle(
-                        fontSize: 12,
-                        lineSpacing: 1.5,
-                      ),
+                      style: const pw.TextStyle(fontSize: 12, lineSpacing: 1.5),
                       textAlign: pw.TextAlign.justify,
                     ),
 
@@ -205,13 +194,8 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                       pw.SizedBox(height: 25),
                       pw.Container(
                         width: double.infinity,
-                        constraints: const pw.BoxConstraints(
-                          maxHeight: 300,
-                        ),
-                        child: pw.Image(
-                          imagenPdf,
-                          fit: pw.BoxFit.contain,
-                        ),
+                        constraints: const pw.BoxConstraints(maxHeight: 300),
+                        child: pw.Image(imagenPdf, fit: pw.BoxFit.contain),
                       ),
                     ],
                   ],
@@ -226,20 +210,16 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
       final file = File('${output.path}/Glosario_Informatico_Completo.pdf');
       await file.writeAsBytes(await pdf.save());
 
-      if (mounted) {
-        Navigator.pop(context);
-      }
+      if (mounted) Navigator.pop(context);
 
       await Share.shareXFiles(
         [XFile(file.path)],
-        text: 'Glosario Informático Completo - ${terminosCompletos.length} términos',
+        text:
+            'Glosario Informático Completo - ${terminosCompletos.length} términos',
       );
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);
-      }
-
-      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al generar el glosario: $e'),
@@ -253,9 +233,7 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
   void manejarRetroceso() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (context) => PantallaInicio(),
-      ),
+      MaterialPageRoute(builder: (context) => PantallaInicio()),
     );
   }
 
@@ -277,11 +255,11 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                   IconButton(
                     icon: const Icon(Icons.arrow_back),
                     onPressed: () async {
-                      FocusScope.of(context).unfocus();
-                      await Future.delayed(const Duration(milliseconds: 300));
-                      if (mounted) {
-                        manejarRetroceso();
-                      }
+                      FocusScope.of(context).unfocus(); // Cierre teclado
+                      await Future.delayed(
+                        const Duration(milliseconds: 600),
+                      ); // Esperar
+                      if (mounted) manejarRetroceso(); // Regresar limpio
                     },
                   ),
                   Expanded(
@@ -331,100 +309,107 @@ class _PantallaBusquedaState extends State<PantallaBusqueda> {
                         child: Center(child: CircularProgressIndicator()),
                       )
                     : filtrados.isEmpty
-                        ? const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 40),
-                            child: Center(
-                              child: Text(
-                                'No se encontraron resultados',
-                                style: TextStyle(fontSize: 16),
-                              ),
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 40),
+                        child: Center(
+                          child: Text(
+                            'No se encontraron resultados',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: filtrados.length,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          final termino = filtrados[index];
+                          final nombre = termino['nombretermino'] as String;
+                          final imagenUrl = termino['imagen_url'] as String?;
+
+                          return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
                             ),
-                          )
-                        : ListView.builder(
-                            itemCount: filtrados.length,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              final termino = filtrados[index];
-                              final nombre = termino['nombretermino'] as String;
-                              final imagenUrl = termino['imagen_url'] as String?;
-                              
-                              return ListTile(
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                leading: Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[200],
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: imagenUrl != null && imagenUrl.isNotEmpty
-                                      ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
-                                          child: Image.network(
-                                            imagenUrl,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) {
+                            leading: Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: imagenUrl != null && imagenUrl.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        imagenUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
                                               return const Icon(
                                                 Icons.article,
                                                 size: 30,
                                                 color: Colors.grey,
                                               );
                                             },
-                                            loadingBuilder: (context, child, loadingProgress) {
-                                              if (loadingProgress == null) return child;
+                                        loadingBuilder:
+                                            (context, child, loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return child;
+                                              }
                                               return const Center(
                                                 child: SizedBox(
                                                   width: 20,
                                                   height: 20,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                  ),
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                      ),
                                                 ),
                                               );
                                             },
-                                          ),
-                                        )
-                                      : const Icon(
-                                          Icons.article,
-                                          size: 30,
-                                          color: Colors.grey,
-                                        ),
-                                ),
-                                title: Text(
-                                  nombre,
-                                  style: const TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                trailing: const Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 16,
-                                  color: Colors.grey,
-                                ),
-                                onTap: () async {
-                                  FocusScope.of(context).unfocus();
-                                  await Future.delayed(const Duration(milliseconds: 300));
-                                  if (mounted) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => PantallaResultado(
-                                          terminoId: termino['id'] as int,
-                                          nombreTermino: nombre,
-                                        ),
                                       ),
-                                    );
-                                  }
-                                },
+                                    )
+                                  : const Icon(
+                                      Icons.article,
+                                      size: 30,
+                                      color: Colors.grey,
+                                    ),
+                            ),
+                            title: Text(
+                              nombre,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            trailing: const Icon(
+                              Icons.arrow_forward_ios,
+                              size: 16,
+                              color: Colors.grey,
+                            ),
+                            onTap: () async {
+                              FocusScope.of(context).unfocus();
+                              await Future.delayed(
+                                const Duration(milliseconds: 300),
                               );
+                              if (mounted) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PantallaResultado(
+                                      terminoId: termino['id'] as int,
+                                      nombreTermino: nombre,
+                                    ),
+                                  ),
+                                );
+                              }
                             },
-                          ),
+                          );
+                        },
+                      ),
               ),
             ),
           ],
