@@ -5,6 +5,13 @@ import 'package:flutter_application/provider/dispositivo_provider.dart';
 import '../logica/glosario.dart';
 import '../logica/termino.dart';
 
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
+
 class PantallaResultado extends StatefulWidget {
   final int terminoId;
   final String nombreTermino;
@@ -63,17 +70,11 @@ class _PantallaResultado extends State<PantallaResultado> {
         _dispositivo.id,
       );
 
-      final relacionados = await Glosario.obtenerTerminosPorIds([
-        1,
-        2,
-        3,
-        4,
-        5,
-      ]);
+      final relacionados = await Glosario.obtenerRelacionadosDe(widget.terminoId);
 
       setState(() {
         termino = terminoEncontrado;
-        terminosRelacionados = relacionados.take(5).toList();
+        terminosRelacionados = relacionados;
         esFavorito = esFav;
         cargando = false;
       });
@@ -96,6 +97,143 @@ class _PantallaResultado extends State<PantallaResultado> {
     setState(() {
       esFavorito = !esFavorito;
     });
+  }
+
+
+  Future<void> compartirComoPDF() async {
+    if (termino == null) return;
+
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      final pdf = pw.Document();
+
+      pw.ImageProvider? imagenPdf;
+      if (termino!.imagenUrl != null && termino!.imagenUrl!.isNotEmpty) {
+        try {
+          imagenPdf = await networkImage(termino!.imagenUrl!);
+        } catch (e) {
+          print('Error al cargar imagen: $e');
+        }
+      }
+
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (pw.Context context) {
+            return pw.Padding(
+              padding: const pw.EdgeInsets.all(40),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'Glosario Informático',
+                    style: pw.TextStyle(
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.grey700,
+                    ),
+                  ),
+                  pw.SizedBox(height: 5),
+                  pw.Divider(thickness: 1, color: PdfColors.grey400),
+                  pw.SizedBox(height: 25),
+
+                  pw.Text(
+                    termino!.nombreTermino,
+                    style: pw.TextStyle(
+                      fontSize: 32,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                  pw.SizedBox(height: 30),
+
+                  pw.Text(
+                    'Definición',
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                  pw.SizedBox(height: 10),
+                  pw.Text(
+                    termino!.definicion,
+                    style: const pw.TextStyle(
+                      fontSize: 12,
+                      lineSpacing: 1.5,
+                    ),
+                    textAlign: pw.TextAlign.justify,
+                  ),
+                  pw.SizedBox(height: 25),
+
+                  pw.Text(
+                    'Ejemplo',
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                  pw.SizedBox(height: 10),
+                  pw.Text(
+                    termino!.ejemplo,
+                    style: const pw.TextStyle(
+                      fontSize: 12,
+                      lineSpacing: 1.5,
+                    ),
+                    textAlign: pw.TextAlign.justify,
+                  ),
+
+                  if (imagenPdf != null) ...[
+                    pw.SizedBox(height: 25),
+                    pw.Container(
+                      width: double.infinity,
+                      constraints: const pw.BoxConstraints(
+                        maxHeight: 300,
+                      ),
+                      child: pw.Image(
+                        imagenPdf,
+                        fit: pw.BoxFit.contain,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
+        ),
+      );
+
+      final output = await getTemporaryDirectory();
+      final file = File('${output.path}/${termino!.nombreTermino}.pdf');
+      await file.writeAsBytes(await pdf.save());
+
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'Definición de: ${termino!.nombreTermino}',
+      );
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al compartir: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void volverAPalabraRaiz() {
@@ -177,13 +315,21 @@ class _PantallaResultado extends State<PantallaResultado> {
                     icon: const Icon(Icons.arrow_back, size: 28),
                     onPressed: manejarRetroceso,
                   ),
-                  IconButton(
-                    icon: Icon(
-                      esFavorito ? Icons.star : Icons.star_border,
-                      size: 28,
-                      color: esFavorito ? Colors.amber : Colors.black,
-                    ),
-                    onPressed: toggleFavorito,
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.share, size: 28),
+                        onPressed: compartirComoPDF,
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          esFavorito ? Icons.star : Icons.star_border,
+                          size: 28,
+                          color: esFavorito ? Colors.amber : Colors.black,
+                        ),
+                        onPressed: toggleFavorito,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -233,6 +379,58 @@ class _PantallaResultado extends State<PantallaResultado> {
                         termino!.ejemplo,
                         style: const TextStyle(fontSize: 16, height: 1.5),
                       ),
+                      const SizedBox(height: 16),
+
+                      if (termino!.imagenUrl != null && termino!.imagenUrl!.isNotEmpty)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            termino!.imagenUrl!,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'No se pudo cargar la imagen',
+                                        style: TextStyle(color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      
                       const SizedBox(height: 32),
 
                       if (terminosRelacionados.isNotEmpty) ...[
@@ -310,8 +508,8 @@ class _PantallaResultado extends State<PantallaResultado> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/logica/glosario.dart';
 import 'package:flutter_application/provider/dispositivo_provider.dart';
-import 'package:provider/provider.dart';
 
 class PantallaSugerir extends StatefulWidget {
   const PantallaSugerir({super.key});

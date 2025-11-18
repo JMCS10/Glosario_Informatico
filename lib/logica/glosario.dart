@@ -9,24 +9,25 @@ class Glosario {
   static const String _tablaSugerencias = 'sugerencias';
 
   static Future<List<Map<String, dynamic>>> obtenerTodosLosNombres() async {
-    try {
-      final response = await SupabaseConexion.client
-          .from(_tabla)
-          .select('id, nombretermino')
-          .order('nombretermino',ascending: true);
+  try {
+    final response = await SupabaseConexion.client
+        .from(_tabla)
+        .select('id, nombretermino, imagen_url')
+        .order('nombretermino', ascending: true);
 
-      return (response as List)
-          .map(
-            (item) => {
-              'id': item['id'] as int,
-              'nombretermino': item['nombretermino'] as String,
-            },
-          )
-          .toList();
-    } catch (e) {
-      return [];
-    }
+    return (response as List)
+        .map(
+          (item) => {
+            'id': item['id'] as int,
+            'nombretermino': item['nombretermino'] as String,
+            'imagen_url': item['imagen_url'] as String?,
+          },
+        )
+        .toList();
+  } catch (e) {
+    return [];
   }
+}
 
   static Future<Termino?> buscarTerminoPorId(int id) async {
     try {
@@ -285,5 +286,52 @@ class Glosario {
           .delete()
           .eq('dispositivo_id', idDispositivo);
     } catch (_) {}
+  }
+  
+  static Future<List<int>> obtenerIdsRelacionados(int terminoId) async {
+    try {
+      final rows = await SupabaseConexion.client
+          .from('terminos_relacionados')
+          .select('relacionado_id')
+          .eq('termino_id', terminoId)
+          .limit(5);
+
+      return (rows as List)
+          .map((r) => (r['relacionado_id'] as num).toInt())
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static Future<List<Termino>> obtenerRelacionadosDe(int terminoId) async {
+    try {
+      final List<dynamic> data = await SupabaseConexion.client
+          .from('terminos_relacionados')
+          .select(
+            'relacionado_id, terminos:relacionado_id (id, nombretermino, definicion, ejemplo, imagen_url)',
+          )
+          .eq('termino_id', terminoId)
+          .limit(5);
+
+      return data.whereType<Map<String, dynamic>>().map((row) {
+        final Map<String, dynamic>? terminoJson =
+            row['terminos'] as Map<String, dynamic>?;
+        if (terminoJson == null) {
+          // Fallback por si no resolviera el join
+          return Termino.fromJson(<String, dynamic>{
+            'id': row['relacionado_id'],
+            'nombretermino': 'Término desconocido',
+            'definicion': '',
+            'ejemplo': '',
+          });
+        }
+        return Termino.fromJson(terminoJson);
+      }).toList();
+    } catch (e) {
+      final ids = await obtenerIdsRelacionados(terminoId);
+      if (ids.isEmpty) return [];
+      return obtenerTerminosPorIds(ids);
+    }
   }
 }

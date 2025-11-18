@@ -30,6 +30,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  
+  
+  pdf: ^3.10.4
+  printing: ^5.11.0
+  path_provider: ^2.1.1
+  share_plus: ^7.2.1
 
   # Supabase para conexión a base de datos
   supabase_flutter: ^2.0.0
@@ -44,7 +50,15 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  test: ^1.24.0
+  integration_test:
+    sdk: flutter
+  mockito: ^5.4.4
+  build_runner: ^2.4.6
+  #shared_preferences: ^2.2.2
 
+  flutter_native_splash: ^2.4.2
+  flutter_launcher_icons: ^0.13.1
   # Buenas prácticas de código
   flutter_lints: ^5.0.0
 
@@ -71,6 +85,11 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
+
+  assets:
+    - assets/icon.png
+    - assets/splash.png
+
   fonts:
     - family: Angkor
       fonts:
@@ -80,6 +99,7 @@ flutter:
       fonts:
         - asset: assets/fonts/Inter-Regular.ttf
           weight: 400
+    
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
@@ -90,8 +110,20 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
-
-
+flutter_native_splash:
+  android: true
+  ios: false
+  web: false
   
+  fullscreen: true
+  background_image: assets/splash.png
+  android_12:
+    background_image: assets/splash.png
 
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/icon.png
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/icon.png
   
