@@ -65,7 +65,7 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
                 onPressed: () {
                   FocusScope.of(context).unfocus(); // 👈 Cierra el teclado
                   // Espera un breve instante antes de volver atrás
-                  Future.delayed(const Duration(milliseconds: 500), () {
+                  Future.delayed(const Duration(milliseconds: 600), () {
                     Navigator.pop(context);
                   });
                 },
