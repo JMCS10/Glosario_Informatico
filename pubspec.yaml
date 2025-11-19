@@ -88,7 +88,7 @@ flutter:
 
   assets:
     - assets/icon2.png
-    - assets/transicion2.png
+    - assets/splash2.png
 
   fonts:
     - family: Angkor
@@ -116,9 +116,9 @@ flutter_native_splash:
   web: false
   
   fullscreen: true
-  background_image: assets/transicion2.png
+  background_image: assets/splash2.png
   android_12:
-    background_image: assets/transicion2.png
+    background_image: assets/splash2.png
 
 flutter_launcher_icons:
   android: true
