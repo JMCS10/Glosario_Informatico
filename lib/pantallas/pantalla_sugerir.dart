@@ -45,6 +45,7 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
       setState(() => _enviando = false);
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,7 +65,7 @@ class _PantallaSugerirState extends State<PantallaSugerir> {
                 onPressed: () {
                   FocusScope.of(context).unfocus(); // 👈 Cierra el teclado
                   // Espera un breve instante antes de volver atrás
-                  Future.delayed(const Duration(milliseconds: 500), () {
+                  Future.delayed(const Duration(milliseconds: 600), () {
                     Navigator.pop(context);
                   });
                 },
